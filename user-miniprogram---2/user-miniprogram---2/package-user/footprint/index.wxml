@@ -1,0 +1,60 @@
+<view class="container">
+<custom-nav-bar title="最近浏览" color="#111111" showBack="{{true}}" backgroundColor="#ffffff">
+    <view slot="right" class="clear-btn active-opacity" catchtap="clearAll" wx:if="{{list.length > 0}}">清空记录</view>
+  </custom-nav-bar>
+
+  <scroll-view class="fp-scroll" scroll-y bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+    <view class="hero">
+      <view class="hero-kicker">浏览记录</view>
+      <view class="hero-title">最近浏览</view>
+      <view class="hero-pills">
+        <text class="hero-pill">记录 {{displayCount}} 条</text>
+        <text class="hero-pill">日期 {{groupedList.length}} 组</text>
+      </view>
+    </view>
+
+    <block wx:for="{{groupedList}}" wx:key="date">
+      <view class="date-header">
+        <view class="date-main">
+          <text class="date-kicker">按日回看</text>
+          <text class="date-text">{{item.dateLabel}}</text>
+        </view>
+        <text class="date-count">{{item.records.length}} 条</text>
+      </view>
+      <view class="fp-list">
+        <view class="fp-record active-opacity" wx:for="{{item.records}}" wx:for-item="rec" wx:key="id" bindtap="goDetail" data-id="{{rec.product.id || rec.productId}}">
+          <image wx:if="{{rec.product.image}}" class="fp-record-img" src="{{rec.product.image}}" mode="aspectFill"></image>
+          <view wx:else class="fp-record-img fp-record-placeholder">图</view>
+          <view class="fp-record-main">
+            <view class="fp-record-title">{{rec.product.name || rec.productName || '已下架商品'}}</view>
+            <view class="fp-record-meta">
+              <text>{{rec.product.categoryName || rec.product.category || '浏览商品'}}</text>
+              <text wx:if="{{rec.product.salesCount || rec.product.saleCount || rec.product.sales}}">已售 {{rec.product.salesCount || rec.product.saleCount || rec.product.sales}}</text>
+            </view>
+            <view class="fp-record-bottom">
+              <text class="fp-record-price">¥{{rec.product.price || '--'}}</text>
+              <view class="fp-record-tail">
+                <text class="fp-record-count" wx:if="{{rec.browseCount > 1}}">浏览 {{rec.browseCount}} 次</text>
+                <text class="fp-record-time">{{rec.browseTime}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view class="empty-state" wx:if="{{!loading && list.length === 0}}">
+      <view class="empty-icon"></view>
+      <view class="empty-text">暂无浏览记录</view>
+      <view class="empty-btn active-opacity" bindtap="goHome">去逛逛</view>
+    </view>
+
+    <view class="load-more" wx:if="{{list.length > 0}}">
+      <text wx:if="{{loadingMore}}">加载中</text>
+      <text wx:elif="{{noMore}}">没有更多记录了</text>
+    </view>
+
+    <view style="height: 120rpx;"></view>
+  </scroll-view>
+</view>
+

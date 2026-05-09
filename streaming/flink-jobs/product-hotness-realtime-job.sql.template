@@ -1,0 +1,90 @@
+-- Flink CDC 直连 MySQL：商品实时热度
+-- 运行前请确保：
+-- 1) 本机 Flink 已启动
+-- 2) FLINK_HOME/lib 中已放入：
+--    - Flink CDC MySQL connector
+--    - Flink JDBC connector
+--    - MySQL JDBC driver
+-- 3) MySQL 已开启 binlog（ROW 模式）
+
+SET 'execution.runtime-mode' = 'streaming';
+SET 'table.local-time-zone' = 'Asia/Shanghai';
+
+CREATE TABLE user_behavior_cdc (
+  id BIGINT,
+  user_id BIGINT,
+  product_id BIGINT,
+  behavior_type STRING,
+  search_keyword STRING,
+  duration INT,
+  create_time TIMESTAMP(3),
+  proc_time AS PROCTIME(),
+  PRIMARY KEY (id) NOT ENFORCED
+) WITH (
+  'connector' = 'mysql-cdc',
+  'hostname' = '__MYSQL_HOST__',
+  'port' = '__MYSQL_PORT__',
+  'username' = '__MYSQL_USERNAME__',
+  'password' = '__MYSQL_PASSWORD__',
+  'database-name' = '__MYSQL_DATABASE__',
+  'table-name' = 'user_behavior'
+);
+
+CREATE TABLE product_dim (
+  id BIGINT,
+  category_id BIGINT,
+  status INT,
+  PRIMARY KEY (id) NOT ENFORCED
+) WITH (
+  'connector' = 'jdbc',
+  'url' = 'jdbc:mysql://__MYSQL_HOST__:__MYSQL_PORT__/__MYSQL_DATABASE__?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai',
+  'table-name' = 'product',
+  'username' = '__MYSQL_USERNAME__',
+  'password' = '__MYSQL_PASSWORD__'
+);
+
+CREATE TABLE stream_product_hotness_realtime (
+  product_id BIGINT,
+  category_id BIGINT,
+  hot_score DOUBLE,
+  behavior_count BIGINT,
+  purchase_count BIGINT,
+  last_event_time TIMESTAMP(3),
+  update_time TIMESTAMP(3),
+  PRIMARY KEY (product_id) NOT ENFORCED
+) WITH (
+  'connector' = 'jdbc',
+  'url' = 'jdbc:mysql://__MYSQL_HOST__:__MYSQL_PORT__/__MYSQL_DATABASE__?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai',
+  'table-name' = 'stream_product_hotness_realtime',
+  'username' = '__MYSQL_USERNAME__',
+  'password' = '__MYSQL_PASSWORD__'
+);
+
+INSERT INTO stream_product_hotness_realtime
+SELECT
+  ub.product_id,
+  MAX(pd.category_id) AS category_id,
+  CAST(SUM(
+    CASE ub.behavior_type
+      WHEN 'purchase' THEN 8.0
+      WHEN 'favorite' THEN 4.0
+      WHEN 'cart' THEN 3.0
+      WHEN 'view' THEN 1.0
+      ELSE 0.5
+    END
+  ) AS DOUBLE) AS hot_score,
+  COUNT(*) AS behavior_count,
+  SUM(
+    CASE
+      WHEN ub.behavior_type = 'purchase' THEN 1
+      ELSE 0
+    END
+  ) AS purchase_count,
+  MAX(ub.create_time) AS last_event_time,
+  CURRENT_TIMESTAMP AS update_time
+FROM user_behavior_cdc AS ub
+LEFT JOIN product_dim FOR SYSTEM_TIME AS OF ub.proc_time AS pd
+  ON ub.product_id = pd.id
+WHERE ub.product_id IS NOT NULL
+  AND (pd.status IS NULL OR pd.status = 1)
+GROUP BY ub.product_id;

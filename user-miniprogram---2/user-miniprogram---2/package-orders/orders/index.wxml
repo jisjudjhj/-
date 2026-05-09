@@ -1,0 +1,137 @@
+<view class="orders-page">
+  <custom-nav-bar title="订单" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <view class="control-hero">
+    <text class="hero-kicker">订单中心</text>
+    <text class="hero-title">订单进度</text>
+    <view class="hero-pills">
+      <text class="hero-pill">全部 {{tabs[0].badgeCount || 0}}</text>
+      <text class="hero-pill">待付款 {{tabs[1].badgeCount || 0}}</text>
+      <text class="hero-pill">待收货 {{tabs[3].badgeCount || 0}}</text>
+      <text class="hero-pill">售后 {{tabs[5].badgeCount || 0}}</text>
+    </view>
+    <view class="status-grid">
+      <view class="status-chip active-opacity" bindtap="switchTab" data-value="unpaid" data-index="1">
+        <view class="chip-icon chip-icon-unpaid"></view>
+        <text class="chip-label">待付款</text>
+        <text class="chip-value">{{tabs[1].badgeCount ? tabs[1].badgeCount : 0}}</text>
+      </view>
+      <view class="status-chip active-opacity" bindtap="switchTab" data-value="unshipped" data-index="2">
+        <view class="chip-icon chip-icon-unshipped"></view>
+        <text class="chip-label">待发货</text>
+        <text class="chip-value">{{tabs[2].badgeCount ? tabs[2].badgeCount : 0}}</text>
+      </view>
+      <view class="status-chip active-opacity" bindtap="switchTab" data-value="unreceived" data-index="3">
+        <view class="chip-icon chip-icon-unreceived"></view>
+        <text class="chip-label">待收货</text>
+        <text class="chip-value">{{tabs[3].badgeCount ? tabs[3].badgeCount : 0}}</text>
+      </view>
+      <view class="status-chip active-opacity" bindtap="switchTab" data-value="aftersale" data-index="5">
+        <view class="chip-icon chip-icon-aftersale"></view>
+        <text class="chip-label">售后</text>
+        <text class="chip-value">{{tabs[5].badgeCount ? tabs[5].badgeCount : 0}}</text>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view class="tabs-wrap" scroll-x enable-flex>
+    <view
+      class="tab-item {{currentTab === item.value ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="value"
+      bindtap="switchTab"
+      data-value="{{item.value}}"
+      data-index="{{index}}"
+    >
+      <text>{{item.label}}</text>
+      <view class="tab-badge {{currentTab === item.value ? 'active' : ''}}" wx:if="{{item.badgeCount > 0}}">
+        {{item.badgeCount > 99 ? '99+' : item.badgeCount}}
+      </view>
+    </view>
+    <view class="tab-indicator" style="transform: translateX({{indicatorLeft}}px); width: {{indicatorWidth}}px;"></view>
+  </scroll-view>
+
+  <scroll-view
+    class="order-scroll"
+    scroll-y
+    refresher-enabled
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+    bindscrolltolower="onReachBottom"
+    lower-threshold="120"
+  >
+    <view class="list-summary" wx:if="{{!loading}}">
+      <text class="list-summary-title">{{currentTab === 'all' ? '全部订单' : (currentTab === 'unpaid' ? '待付款' : (currentTab === 'unshipped' ? '待发货' : (currentTab === 'unreceived' ? '待收货' : (currentTab === 'completed' ? '已完成' : '退换/售后'))))}}</text>
+      <text class="list-summary-meta">当前 {{orderList.length}} 条</text>
+    </view>
+    <view class="order-list" wx:if="{{orderList.length > 0}}">
+      <view class="order-card" wx:for="{{orderList}}" wx:key="id" bindtap="goToDetail" data-id="{{item.id}}">
+        <view class="order-head">
+          <view class="order-head-left">
+            <text class="order-no">{{item.isRefund ? '退款单' : '订单号'}}：{{item.orderNo}}</text>
+            <text class="order-chip" wx:if="{{item.isSeckill && !item.isRefund}}">秒杀</text>
+          </view>
+          <text class="order-status {{item.status === 'unpaid' ? 'text-danger' : (item.status === 'completed' ? 'text-success' : (item.status === 'aftersale' ? 'text-warning' : 'text-primary'))}}">{{item.statusText}}</text>
+        </view>
+
+        <view class="refund-panel" wx:if="{{item.isRefund}}">
+          <text class="refund-title">售后单据</text>
+          <text class="refund-amount">退款金额：<text class="money"><text class="price-symbol">¥</text>{{item.totalPrice}}</text></text>
+          <text class="refund-reason" wx:if="{{item.refundReason}}">退款原因：{{item.refundReason}}</text>
+        </view>
+
+        <block wx:if="{{!item.isRefund}}">
+          <view class="goods-row" wx:for="{{item.goods}}" wx:key="id" wx:for-item="good" wx:for-index="goodsIndex">
+            <image wx:if="{{good.image}}" class="goods-img" src="{{good.image}}" mode="aspectFill" binderror="handleGoodsImageError" data-order-index="{{index}}" data-goods-index="{{goodsIndex}}"></image>
+            <view wx:else class="goods-img image-placeholder">
+              <text class="image-placeholder-text">商品图</text>
+            </view>
+            <view class="goods-info">
+              <text class="goods-title text-ellipsis">{{good.title}}</text>
+              <text class="goods-meta">{{item.isSeckill ? '秒杀订单商品' : '常规订单商品'}}</text>
+              <view class="goods-bottom">
+                <text class="goods-price"><text class="price-symbol">¥</text>{{good.price}}</text>
+                <text class="goods-qty">x{{good.quantity}}</text>
+              </view>
+              <view class="goods-review-row" wx:if="{{item.status === 'completed'}}" catchtap="noop">
+                <text class="goods-review-hint">{{good.reviewed ? '已评价' : (good.canReview ? '可评价' : '暂不可评')}}</text>
+                <view class="goods-review-btn is-loading" wx:if="{{good.reviewChecking}}">检查中</view>
+                <view class="goods-review-btn is-muted" wx:elif="{{good.reviewed}}">已评价</view>
+                <view class="goods-review-btn is-muted" wx:elif="{{!good.canReview}}">暂不可评</view>
+                <view
+                  class="goods-review-btn active-opacity"
+                  wx:else
+                  catchtap="goToReviewEditor"
+                  data-order-index="{{index}}"
+                  data-goods-index="{{goodsIndex}}"
+                >去评价</view>
+              </view>
+            </view>
+          </view>
+
+          <view class="order-foot">
+            <view class="order-summary">
+              <text class="order-total">共 {{item.totalQuantity}} 件，实付款 <text class="money"><text class="price-symbol">¥</text>{{item.totalPrice}}</text></text>
+              <text class="order-discount" wx:if="{{item.isSeckill && item.seckillDiscount > 0}}">秒杀优惠已减 ¥{{item.seckillDiscount}}</text>
+            </view>
+            <view class="order-actions" catchtap="noop">
+              <custom-button wx:if="{{item.status === 'unpaid'}}" type="secondary" size="small" customStyle="margin-right: 16rpx; min-width: 148rpx;" bind:click="handleOrderAction" data-action="cancel" data-id="{{item.id}}">取消订单</custom-button>
+              <custom-button wx:if="{{item.status === 'unpaid'}}" type="primary" size="small" customStyle="min-width: 148rpx;" bind:click="handleOrderAction" data-action="pay" data-id="{{item.id}}">立即付款</custom-button>
+              <custom-button wx:if="{{item.canRefund}}" type="secondary" size="small" customStyle="{{item.status === 'unreceived' ? 'margin-right: 16rpx; min-width: 148rpx;' : 'min-width: 148rpx;'}}" bind:click="handleOrderAction" data-action="refund" data-id="{{item.id}}">申请退款</custom-button>
+              <custom-button wx:if="{{item.status === 'unreceived'}}" type="primary" size="small" customStyle="min-width: 148rpx;" bind:click="handleOrderAction" data-action="confirm" data-id="{{item.id}}">确认收货</custom-button>
+            </view>
+          </view>
+        </block>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:else>
+      <view class="empty-icon"></view>
+      <text class="empty-title">暂无相关订单</text>
+      <text class="empty-desc">去首页看看最近的人气商品吧</text>
+      <custom-button type="secondary" size="normal" customStyle="width: 220rpx;" bind:click="goHome">去逛逛</custom-button>
+    </view>
+
+    <view style="height: 86rpx;"></view>
+  </scroll-view>
+</view>

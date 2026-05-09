@@ -1,0 +1,200 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: ecommerce-rabbitmq
+    profiles: ["mq"]
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    container_name: ecommerce-backend
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      SERVER_ADDRESS: 0.0.0.0
+      SERVER_PORT: 8080
+      DB_URL: jdbc:mysql://host.docker.internal:3306/${DB_NAME}?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      MQ_ENABLED: ${MQ_ENABLED:-false}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USERNAME: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      STREAM_REALTIME_ENABLED: ${STREAM_REALTIME_ENABLED:-true}
+      STREAM_KAFKA_ENABLED: ${STREAM_KAFKA_ENABLED:-false}
+      STORAGE_TYPE: local
+      LOCAL_BASE_URL: ${LOCAL_BASE_URL}
+      JAVA_OPTS: ${JAVA_OPTS:-Xms256m -Xmx768m}
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ecommerce-uploads:/app/uploads
+
+  admin-frontend:
+    build:
+      context: ../management-pc
+      dockerfile: Dockerfile
+      args:
+        VITE_PUBLIC_BASE: /
+        VITE_API_BASE: /api
+        VITE_WS_BASE: /ws
+        VITE_COMPETITION_MODE: "true"
+    container_name: ecommerce-admin-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:8088:80"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    container_name: ecommerce-zookeeper
+    profiles: ["streaming"]
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "127.0.0.1:2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: ecommerce-kafka
+    profiles: ["streaming"]
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - "127.0.0.1:9092:9092"
+      - "127.0.0.1:29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://${SERVER_IP:-127.0.0.1}:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: ecommerce-kafka-ui
+    profiles: ["streaming"]
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    ports:
+      - "127.0.0.1:8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: ecommerce-server
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+
+  connect:
+    image: debezium/connect:2.5
+    container_name: ecommerce-debezium-connect
+    profiles: ["streaming"]
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_connect_configs
+      OFFSET_STORAGE_TOPIC: debezium_connect_offsets
+      STATUS_STORAGE_TOPIC: debezium_connect_statuses
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+
+  jobmanager:
+    image: flink:1.18.1-scala_2.12-java11
+    container_name: ecommerce-flink-jobmanager
+    profiles: ["streaming"]
+    restart: unless-stopped
+    command: jobmanager
+    ports:
+      - "127.0.0.1:8081:8081"
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        jobmanager.memory.process.size: 384m
+
+  taskmanager:
+    image: flink:1.18.1-scala_2.12-java11
+    container_name: ecommerce-flink-taskmanager
+    profiles: ["streaming"]
+    restart: unless-stopped
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        taskmanager.memory.process.size: 512m
+
+  python-tools:
+    image: python:3.11-slim
+    container_name: ecommerce-python-tools
+    profiles: ["python"]
+    restart: unless-stopped
+    working_dir: /workspace
+    command: ["sh", "-c", "echo 'Current repository does not include backend/python_analytics; this container is reserved for future Python analytics scripts.' && sleep infinity"]
+    volumes:
+      - ../:/workspace
+
+volumes:
+  redis-data:
+  rabbitmq-data:
+  ecommerce-uploads:

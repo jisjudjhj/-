@@ -1,0 +1,61 @@
+<view class="container">
+<custom-nav-bar title="设置" showBack="{{true}}" color="#111111" backgroundColor="#ffffff"></custom-nav-bar>
+
+  <view class="settings-content">
+    <view class="hero">
+      <view class="hero-title">账户与设备</view>
+    </view>
+
+    <view class="section">
+      <view class="setting-item active-opacity" bindtap="handleAccountAction">
+        <view class="setting-left">
+          <view class="setting-icon icon-user"></view>
+          <view class="setting-copy">
+            <text class="setting-label">{{loggedIn ? '账号状态' : '立即登录'}}</text>
+            <text class="setting-desc">{{loggedIn ? '已登录' : '登录后同步'}}</text>
+          </view>
+        </view>
+        <view class="setting-right">
+          <text class="setting-value">{{loggedIn ? (userInfo.nickName || '已登录') : '未登录'}}</text>
+          <view class="arrow-right"></view>
+        </view>
+      </view>
+
+      <view class="setting-item active-opacity" bindtap="clearCache">
+        <view class="setting-left">
+          <view class="setting-icon icon-cache"></view>
+          <view class="setting-copy">
+            <text class="setting-label">清除缓存</text>
+            <text class="setting-desc">释放空间</text>
+          </view>
+        </view>
+        <view class="setting-right">
+          <text class="setting-value">{{cacheSize}}</text>
+          <view class="arrow-right"></view>
+        </view>
+      </view>
+
+      <view class="setting-item">
+        <view class="setting-left">
+          <view class="setting-icon icon-version"></view>
+          <view class="setting-copy">
+            <text class="setting-label">当前版本</text>
+            <text class="setting-desc">已安装最新客户端信息</text>
+          </view>
+        </view>
+        <text class="setting-value">v{{version}}</text>
+      </view>
+    </view>
+
+    <view class="logout-section">
+      <custom-button wx:if="{{loggedIn}}" type="secondary" size="large" block bind:click="logout" customStyle="min-height:72rpx;border-radius:999rpx;">
+        退出登录
+      </custom-button>
+      <custom-button wx:else type="primary" size="large" block bind:click="handleAccountAction" customStyle="min-height:72rpx;border-radius:999rpx;">
+        去登录
+      </custom-button>
+    </view>
+  </view>
+</view>
+
+

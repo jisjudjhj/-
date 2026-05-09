@@ -1,0 +1,130 @@
+<view class="container">
+<custom-nav-bar title="{{selectMode ? '选择收货地址' : '地址管理'}}" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <scroll-view class="address-scroll" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+    <view class="address-list" wx:if="{{addressList.length}}">
+      <view class="address-card {{item.isDefault ? 'address-card-default' : ''}}" wx:for="{{addressList}}" wx:key="id">
+        <view class="address-main" bindtap="handleAddressTap" data-item="{{item}}">
+          <view class="address-user-row">
+            <text class="address-name">{{item.receiverName}}</text>
+            <text class="address-phone">{{item.receiverPhone}}</text>
+            <view class="default-tag" wx:if="{{item.isDefault}}">默认地址</view>
+            <view class="select-tag" wx:if="{{selectMode}}">点击使用</view>
+          </view>
+          <view class="address-detail">{{item.province}}{{item.city}}{{item.district}} {{item.detail}}</view>
+          <view class="address-tip" wx:if="{{item.isDefault}}">下单时会优先使用这条地址</view>
+        </view>
+        <view class="address-actions">
+          <view class="action-btn primary" bindtap="selectAddress" data-item="{{item}}" wx:if="{{selectMode}}">立即使用</view>
+          <view class="action-btn" bindtap="setDefault" data-id="{{item.id}}" wx:if="{{!item.isDefault}}">设为默认</view>
+          <view class="action-btn" bindtap="openEditForm" data-item="{{item}}">编辑</view>
+          <view class="action-btn danger" bindtap="deleteAddress" data-id="{{item.id}}">删除</view>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{!loading && !addressList.length}}">
+      <view class="empty-icon-wrap">
+        <view class="empty-icon"></view>
+      </view>
+    <view class="empty-title">还没有收货地址</view>
+      <view class="empty-actions">
+        <view class="empty-action secondary" bindtap="openAddFormAndLocate">定位选择</view>
+        <view class="empty-action secondary" bindtap="openAddFormAndPaste">粘贴识别</view>
+      </view>
+    </view>
+  </scroll-view>
+
+  <view class="add-bar">
+    <view class="add-bar-links">
+      <view class="add-bar-link" bindtap="openAddFormAndLocate">定位选择</view>
+      <view class="add-bar-link" bindtap="openAddFormAndPaste">粘贴识别</view>
+    </view>
+    <custom-button type="primary" size="large" block bind:click="openAddForm">新增收货地址</custom-button>
+  </view>
+
+  <custom-popup show="{{showForm}}" position="bottom" round bind:close="closeForm">
+    <view class="form-popup">
+      <view class="form-header">
+        <text class="form-title">{{editingId ? '编辑地址' : '新增地址'}}</text>
+        <view class="form-header-actions">
+          <view class="assist-btn secondary" bindtap="chooseLocationForAddress">定位选择</view>
+          <view class="assist-btn secondary" bindtap="pasteFromClipboard">粘贴识别</view>
+        </view>
+      </view>
+
+      <view class="form-note" wx:if="{{!editingId && !addressList.length}}">
+        首个地址会自动设为默认地址，结算页会优先带入
+      </view>
+      <view class="form-note" wx:elif="{{form.isDefault}}">
+        默认地址会在结算时自动选中，也会显示在列表顶部
+      </view>
+      <view class="form-note accent">可用定位选择省市区，详细门牌仍需手动填写</view>
+      <view class="form-note success" wx:if="{{parseTip}}">{{parseTip}}</view>
+
+      <view class="form-group">
+        <text class="form-label">收货人</text>
+        <input
+          class="{{form.receiverName ? 'form-input filled' : 'form-input'}}"
+          placeholder="请输入收货人姓名"
+          placeholder-style="color: #B8BDCC;"
+          value="{{form.receiverName}}"
+          bindinput="onInput"
+          data-field="receiverName"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">手机号</text>
+        <input
+          class="{{form.receiverPhone ? 'form-input filled' : 'form-input'}}"
+          type="number"
+          maxlength="11"
+          placeholder="请输入手机号"
+          placeholder-style="color: #B8BDCC;"
+          value="{{form.receiverPhone}}"
+          bindinput="onInput"
+          data-field="receiverPhone"
+        />
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">所在地区</text>
+        <picker mode="region" value="{{regionValue}}" bindchange="onRegionChange">
+          <view class="picker-trigger {{form.province ? 'filled' : ''}}">
+            {{form.province ? form.province + ' ' + form.city + ' ' + form.district : '请选择省市区'}}
+          </view>
+        </picker>
+      </view>
+
+      <view class="form-group">
+        <text class="form-label">详细地址</text>
+        <textarea
+          class="{{form.detail ? 'form-textarea filled' : 'form-textarea'}}"
+          placeholder="街道、楼栋、门牌号等"
+          placeholder-style="color: #B8BDCC;"
+          value="{{form.detail}}"
+          bindinput="onInput"
+          data-field="detail"
+        />
+      </view>
+
+      <view class="form-group row" bindtap="toggleDefault">
+        <view>
+          <text class="form-label form-label-strong">设为默认地址</text>
+          <view class="form-tip">默认地址会在下单时自动选中</view>
+        </view>
+        <view class="switch-wrap {{form.isDefault ? 'on' : ''}}">
+          <view class="switch-dot"></view>
+        </view>
+      </view>
+
+      <view class="form-footer">
+        <custom-button type="primary" size="large" block bind:click="submitForm">
+          {{submitting ? '保存中...' : '保存地址'}}
+        </custom-button>
+      </view>
+    </view>
+  </custom-popup>
+</view>
+

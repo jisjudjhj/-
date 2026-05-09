@@ -1,0 +1,68 @@
+<view class="cs-page">
+  <custom-nav-bar title="在线客服" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <view class="hero">
+    <view class="hero-main">
+      <text class="hero-kicker">SERVICE CENTER</text>
+      <text class="hero-title">{{unreadCount > 0 ? '你有待处理协商消息' : '客服会话已同步'}}</text>
+      <text class="hero-sub">{{unreadCount > 0 ? (unreadCount + ' 条未读') : '协商 / 官方客服'}}</text>
+    </view>
+    <view class="hero-btn active-opacity" bindtap="goOfficialSupport">官方客服</view>
+  </view>
+
+  <view class="tab-strip">
+    <view
+      class="tab-chip {{activeType === item.value ? 'active' : ''}}"
+      wx:for="{{tabs}}"
+      wx:key="value"
+      data-type="{{item.value}}"
+      bindtap="switchType"
+    >
+      {{item.label}}
+    </view>
+  </view>
+
+  <scroll-view
+    class="scroll"
+    scroll-y
+    refresher-enabled
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+  >
+    <view class="skeleton-list" wx:if="{{loading}}">
+      <view class="skeleton-card skeleton-bg" wx:for="{{[1,2,3]}}" wx:key="*this"></view>
+    </view>
+
+    <view class="conversation-list" wx:elif="{{conversations.length > 0}}">
+      <view
+        class="conversation-card active-opacity"
+        wx:for="{{conversations}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="goConversation"
+      >
+        <view class="card-head">
+          <view class="card-title-wrap">
+            <text class="card-title text-ellipsis">{{item.title}}</text>
+            <text class="tag">{{item.typeText}}</text>
+          </view>
+          <view class="card-time-wrap">
+            <text class="card-time">{{item.lastMessageTime || ''}}</text>
+            <text class="card-badge" wx:if="{{item.unreadCount > 0}}">{{item.unreadCount > 99 ? '99+' : item.unreadCount}}</text>
+          </view>
+        </view>
+        <view class="card-subtitle text-ellipsis">{{item.subtitle}}</view>
+        <view class="card-context text-ellipsis">{{item.contextText}}</view>
+        <view class="card-message text-ellipsis-2">{{item.lastMessage}}</view>
+      </view>
+    </view>
+
+    <view class="empty" wx:else>
+      <view class="empty-icon"></view>
+      <view class="empty-title">暂无会话</view>
+      <view class="empty-sub">可从商品详情或订单详情发起协商</view>
+      <view class="empty-btn active-opacity" bindtap="goOfficialSupport">联系官方客服</view>
+    </view>
+    <view style="height: 48rpx;"></view>
+  </scroll-view>
+</view>

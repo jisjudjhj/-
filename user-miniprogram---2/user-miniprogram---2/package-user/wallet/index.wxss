@@ -1,0 +1,532 @@
+.page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 92% -8%, rgba(0, 122, 255, 0.08), transparent 34%),
+    linear-gradient(180deg, #fbfcff 0%, #f6f7fb 48%, #f3f5f9 100%);
+}
+
+.hero,
+.ledger,
+.recharge-popup {
+  border-radius: 30rpx;
+  background: rgba(255, 255, 255, 0.95);
+  border: 1rpx solid rgba(22, 24, 35, 0.05);
+  box-shadow: 0 16rpx 36rpx rgba(15, 23, 42, 0.05);
+}
+
+.hero {
+  margin: 18rpx 20rpx 0;
+  padding: 32rpx 24rpx;
+  background: #ffffff;
+  border-color: rgba(60, 60, 67, 0.12);
+}
+
+.hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36rpx;
+  padding: 0 14rpx;
+  border-radius: 999rpx;
+  background: #f2f7ff;
+  color: var(--accent-color);
+  font-size: 18rpx;
+  font-weight: 600;
+  letter-spacing: 1rpx;
+}
+
+.hero-label,
+.ledger-title,
+.item-desc,
+.item-amount,
+.popup-title,
+.amount-option,
+.custom-prefix,
+.custom-input,
+.empty-title {
+  color: var(--text-primary);
+}
+
+.hero-label {
+  display: block;
+  margin-top: 18rpx;
+  font-size: 22rpx;
+  color: var(--text-secondary);
+}
+
+.hero-amount {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 70rpx;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: -2rpx;
+  color: var(--text-primary);
+}
+
+.hero-action,
+.chip.active,
+.amount-option.active {
+  background: var(--accent-color);
+  color: #ffffff;
+}
+
+.hero-action {
+  margin-top: 26rpx;
+  width: 208rpx;
+  height: 60rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.ledger {
+  margin: 18rpx 24rpx 0;
+  padding: 24rpx;
+}
+
+.ledger-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16rpx;
+}
+
+.ledger-title {
+  display: block;
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.ledger-sub,
+.item-time,
+.empty-desc,
+.recharge-tip,
+.popup-subtitle,
+.custom-label {
+  color: var(--text-secondary);
+}
+
+.ledger-sub {
+  display: block;
+  margin-top: 10rpx;
+  font-size: 22rpx;
+}
+
+.chips {
+  margin-top: 18rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10rpx;
+}
+
+.chip {
+  min-width: 104rpx;
+  height: 52rpx;
+  padding: 0 20rpx;
+  border-radius: 999rpx;
+  background: #ededf1;
+  color: var(--text-secondary);
+  font-size: 20rpx;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.list {
+  margin-top: 18rpx;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14rpx;
+  padding: 22rpx 0;
+  border-bottom: 1rpx solid var(--border-light);
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.item-left {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 14rpx;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-icon {
+  width: 54rpx;
+  height: 54rpx;
+  border-radius: 16rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24rpx;
+  font-weight: 800;
+  background: var(--surface-soft);
+  color: var(--text-primary);
+}
+
+.item-icon.income {
+  background: rgba(52, 199, 89, 0.12);
+  color: var(--success-color);
+}
+
+.item-icon.expense {
+  background: rgba(255, 59, 48, 0.12);
+  color: var(--danger-color);
+}
+
+.item-top {
+  display: flex;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.item-desc {
+  flex: 1;
+  min-width: 0;
+  font-size: 25rpx;
+  font-weight: 700;
+}
+
+.item-type {
+  height: 32rpx;
+  padding: 0 12rpx;
+  border-radius: 999rpx;
+  background: var(--surface-soft);
+  color: var(--text-secondary);
+  font-size: 17rpx;
+  display: inline-flex;
+  align-items: center;
+}
+
+.item-time {
+  display: block;
+  margin-top: 8rpx;
+  font-size: 20rpx;
+}
+
+.item-amount {
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.item-amount.income {
+  color: var(--success-color);
+}
+
+.item-amount.expense {
+  color: var(--danger-color);
+}
+
+.empty {
+  padding: 96rpx 0;
+  text-align: center;
+}
+
+.empty-title {
+  display: block;
+  font-size: 30rpx;
+  font-weight: 700;
+}
+
+.empty-desc {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.66;
+}
+
+.load-more {
+  margin-top: 20rpx;
+  height: 60rpx;
+  border-radius: 999rpx;
+  background: #ededf1;
+  color: var(--accent-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22rpx;
+  font-weight: 700;
+}
+
+.recharge-popup {
+  padding: 36rpx 30rpx calc(36rpx + env(safe-area-inset-bottom));
+  border-radius: 32rpx 32rpx 0 0;
+  box-shadow: none;
+}
+
+.popup-title {
+  font-size: 32rpx;
+  font-weight: 700;
+}
+
+.popup-subtitle {
+  display: block;
+  margin-top: 12rpx;
+  font-size: 22rpx;
+  line-height: 1.66;
+}
+
+.amount-grid {
+  margin-top: 24rpx;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12rpx;
+}
+
+.amount-option {
+  height: 76rpx;
+  border-radius: 20rpx;
+  background: #f2f2f7;
+  border: 1rpx solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26rpx;
+  font-weight: 700;
+}
+
+.amount-option.active {
+  border-color: rgba(0, 122, 255, 0.12);
+}
+
+.custom-row {
+  margin-top: 24rpx;
+}
+
+.custom-label {
+  font-size: 22rpx;
+}
+
+.custom-wrap {
+  margin-top: 10rpx;
+  height: 76rpx;
+  padding: 0 24rpx;
+  border-radius: 20rpx;
+  border: 1rpx solid rgba(60, 60, 67, 0.1);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+}
+
+.custom-prefix {
+  font-size: 26rpx;
+  font-weight: 700;
+  margin-right: 10rpx;
+}
+
+.custom-input {
+  flex: 1;
+  height: 100%;
+  font-size: 26rpx;
+}
+
+.recharge-tip {
+  margin-top: 16rpx;
+  font-size: 20rpx;
+}
+
+.recharge-footer {
+  margin-top: 24rpx;
+}
+
+/* Final Douyin mall white refinement */
+.page {
+  background: #ffffff;
+}
+
+.hero,
+.ledger,
+.recharge-popup {
+  border-radius: 22rpx;
+  border: 1rpx solid rgba(22, 24, 35, 0.08);
+  box-shadow: none;
+}
+
+.hero {
+  margin: 14rpx 20rpx 0;
+  padding: 26rpx 22rpx;
+}
+
+.hero-kicker {
+  background: rgba(0, 122, 255, 0.1);
+  color: #007AFF;
+}
+
+.hero-label,
+.ledger-sub,
+.item-time,
+.empty-desc,
+.recharge-tip,
+.popup-subtitle,
+.custom-label {
+  color: #747d8c;
+}
+
+.hero-action,
+.chip.active,
+.amount-option.active {
+  background: #007AFF;
+  color: #ffffff;
+}
+
+.hero-action {
+  width: 196rpx;
+}
+
+.ledger {
+  margin: 16rpx 20rpx 0;
+  padding: 22rpx 20rpx;
+}
+
+.chip,
+.load-more,
+.amount-option,
+.item-icon,
+.item-type {
+  background: #f6f7fb;
+}
+
+.chip {
+  color: #727b8a;
+}
+
+.list {
+  margin-top: 16rpx;
+}
+
+.item {
+  border-bottom-color: rgba(22, 24, 35, 0.08);
+}
+
+.item-amount.expense,
+.item-icon.expense {
+  color: #007AFF;
+}
+
+.item-icon.expense {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.load-more {
+  color: #007AFF;
+}
+
+.recharge-popup {
+  border-radius: 28rpx 28rpx 0 0;
+  border: none;
+}
+
+.amount-option.active {
+  border-color: rgba(0, 122, 255, 0.2);
+}
+
+.custom-wrap {
+  border-color: rgba(22, 24, 35, 0.1);
+}
+
+/* Unified commerce detail pass */
+.page {
+  background: var(--page-shell-bg);
+}
+
+.hero,
+.ledger,
+.item,
+.empty,
+.recharge-popup {
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1rpx solid rgba(17, 17, 17, 0.06);
+  box-shadow: 0 12rpx 28rpx rgba(17, 17, 17, 0.05);
+}
+
+.hero {
+  margin: 118rpx 20rpx 16rpx;
+  background:
+    radial-gradient(circle at 88% 8%, rgba(0, 122, 255, 0.2), transparent 34%),
+    linear-gradient(135deg, #111111 0%, #2a2d35 100%);
+}
+
+.hero-kicker {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.hero-amount,
+.hero-label {
+  color: #ffffff;
+}
+
+.hero-action,
+.chip.active,
+.amount-option.active {
+  background: #007AFF;
+  color: #ffffff;
+}
+
+.ledger {
+  margin-left: 20rpx;
+  margin-right: 20rpx;
+}
+
+.chip,
+.amount-option,
+.custom-wrap {
+  background: #f3f4f6;
+  border: 1rpx solid rgba(17, 17, 17, 0.05);
+}
+
+.item-amount.income,
+.item-icon.income {
+  color: #31c26b;
+}
+
+.item-amount.expense,
+.item-icon.expense,
+.load-more {
+  color: #007AFF;
+}
+
+/* Readability pass */
+.hero-title,
+.ledger-title,
+.item-title {
+  font-size: 31rpx !important;
+  line-height: 1.32 !important;
+}
+
+.hero-sub,
+.chip,
+.amount-option,
+.item-meta,
+.load-more,
+.custom-wrap {
+  font-size: 24rpx !important;
+  line-height: 1.48 !important;
+}
+
+.balance-amount,
+.item-amount {
+  font-size: 40rpx !important;
+}
+
+.hero-action,
+.amount-option {
+  min-height: 64rpx !important;
+}

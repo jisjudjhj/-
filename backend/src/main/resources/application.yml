@@ -1,0 +1,414 @@
+server:
+  address: ${SERVER_ADDRESS:0.0.0.0}
+  port: ${SERVER_PORT:8080}
+  tomcat:
+    uri-encoding: UTF-8
+  servlet:
+    context-path: /
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DB_URL:jdbc:mysql://localhost:3306/ecommerce_recommend?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: ${DB_POOL_MAX_SIZE:20}
+      minimum-idle: ${DB_POOL_MIN_IDLE:5}
+      idle-timeout: 300000
+      connection-timeout: 30000
+      max-lifetime: 1200000
+      pool-name: EcommerceHikariPool
+
+  redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+    database: ${REDIS_DB:0}
+    timeout: 10000
+    lettuce:
+      pool:
+        max-active: 20
+        max-idle: 10
+        min-idle: 5
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    listener:
+      simple:
+        acknowledge-mode: manual
+
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${KAFKA_CONSUMER_GROUP:ecommerce-stream-consumer}
+      auto-offset-reset: ${KAFKA_AUTO_OFFSET_RESET:latest}
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  messages:
+    encoding: UTF-8
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.ecommerce.entity
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: ${MYBATIS_LOG_IMPL:org.apache.ibatis.logging.nologging.NoLoggingImpl}
+
+jwt:
+  secret: ${JWT_SECRET:}
+  allow-ephemeral-secret: ${JWT_ALLOW_EPHEMERAL_SECRET:false}
+  expiration: 86400000
+
+security:
+  cors:
+    allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:http://localhost:*,http://127.0.0.1:*,http://192.168.*:*,http://10.*:*,http://172.16.*:*,http://172.17.*:*,http://172.18.*:*,http://172.19.*:*,http://172.20.*:*,http://172.21.*:*,http://172.22.*:*,http://172.23.*:*,http://172.24.*:*,http://172.25.*:*,http://172.26.*:*,http://172.27.*:*,http://172.28.*:*,http://172.29.*:*,http://172.30.*:*,http://172.31.*:*,https://staging.example.com,https://api.example.com,https://*.servicewechat.com}
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+    display-request-duration: true
+  default-produces-media-type: application/json
+
+order:
+  timeout-minutes: 30
+  stock:
+    redis-enabled: ${ORDER_STOCK_REDIS_ENABLED:true}
+    redis-key-ttl-seconds: ${ORDER_STOCK_REDIS_KEY_TTL_SECONDS:21600}
+
+mq:
+  enabled: ${MQ_ENABLED:true}
+  publisher-batch-size: 100
+  publish-interval-ms: 3000
+  max-retries: 6
+  retry-delay-seconds: 30
+  listener-max-attempts: 3
+
+offline:
+  enabled: ${OFFLINE_ENABLED:true}
+  active-user-limit: ${OFFLINE_ACTIVE_USER_LIMIT:500}
+  similarity-threshold: ${OFFLINE_SIMILARITY_THRESHOLD:0.01}
+  cooccurrence-min-count: ${OFFLINE_COOCCURRENCE_MIN_COUNT:2}
+  max-products-per-user: ${OFFLINE_MAX_PRODUCTS_PER_USER:100}
+
+recommendation:
+  governance:
+    strategy-version: ${RECOMMENDATION_STRATEGY_VERSION:hybrid-enterprise-v2}
+    gray-enabled: ${RECOMMENDATION_GRAY_ENABLED:true}
+    gray-ratio: ${RECOMMENDATION_GRAY_RATIO:100}
+    fallback-to-hot-when-outside-gray: ${RECOMMENDATION_GRAY_FALLBACK_TO_HOT:true}
+    event-idempotency-ttl-seconds: ${RECOMMENDATION_EVENT_IDEMPOTENCY_TTL_SECONDS:86400}
+  preference-bootstrap:
+    on-startup: ${RECOMMENDATION_PREFERENCE_BOOTSTRAP_ON_STARTUP:true}
+    startup-force: ${RECOMMENDATION_PREFERENCE_BOOTSTRAP_STARTUP_FORCE:false}
+    startup-limit: ${RECOMMENDATION_PREFERENCE_BOOTSTRAP_STARTUP_LIMIT:0}
+  live-priority:
+    personal-enabled: ${RECOMMENDATION_LIVE_PRIORITY_PERSONAL_ENABLED:true}
+    guess-you-like-enabled: ${RECOMMENDATION_LIVE_PRIORITY_GUESS_YOU_LIKE_ENABLED:true}
+  collaborative-weight: 0.3
+  content-weight: 0.55
+  popularity-weight: 0.15
+  cache-ttl: 3600
+  realtime-cache-ttl-seconds: ${RECOMMENDATION_REALTIME_CACHE_TTL_SECONDS:180}
+  dislike:
+    lookback-days: ${RECOMMENDATION_DISLIKE_LOOKBACK_DAYS:30}
+    max-history: ${RECOMMENDATION_DISLIKE_MAX_HISTORY:200}
+    category-suppress-threshold: ${RECOMMENDATION_DISLIKE_CATEGORY_SUPPRESS_THRESHOLD:3}
+    min-remaining: ${RECOMMENDATION_DISLIKE_MIN_REMAINING:6}
+  rerank:
+    exposure-lookback-hours: ${RECOMMENDATION_RERANK_EXPOSURE_LOOKBACK_HOURS:12}
+    exposure-max-history: ${RECOMMENDATION_RERANK_EXPOSURE_MAX_HISTORY:200}
+    exploration-base-rate: ${RECOMMENDATION_RERANK_EXPLORATION_BASE_RATE:0.05}
+    exploration-cold-start-bonus: ${RECOMMENDATION_RERANK_EXPLORATION_COLD_START_BONUS:0.03}
+    max-explore-slots: ${RECOMMENDATION_RERANK_MAX_EXPLORE_SLOTS:2}
+    category-saturation-penalty: ${RECOMMENDATION_RERANK_CATEGORY_SATURATION_PENALTY:9.0}
+    novelty-bonus: ${RECOMMENDATION_RERANK_NOVELTY_BONUS:14.0}
+    guardrail:
+      default:
+        max-per-category: ${RECOMMENDATION_RERANK_GUARDRAIL_DEFAULT_MAX_PER_CATEGORY:4}
+        max-per-merchant: ${RECOMMENDATION_RERANK_GUARDRAIL_DEFAULT_MAX_PER_MERCHANT:2}
+        max-per-near-duplicate: ${RECOMMENDATION_RERANK_GUARDRAIL_DEFAULT_MAX_PER_NEAR_DUPLICATE:1}
+        strict-window-size: ${RECOMMENDATION_RERANK_GUARDRAIL_DEFAULT_STRICT_WINDOW_SIZE:8}
+        supplement-multiplier: ${RECOMMENDATION_RERANK_GUARDRAIL_DEFAULT_SUPPLEMENT_MULTIPLIER:4}
+      home:
+        max-per-category: ${RECOMMENDATION_RERANK_GUARDRAIL_HOME_MAX_PER_CATEGORY:4}
+        max-per-merchant: ${RECOMMENDATION_RERANK_GUARDRAIL_HOME_MAX_PER_MERCHANT:2}
+        max-per-near-duplicate: ${RECOMMENDATION_RERANK_GUARDRAIL_HOME_MAX_PER_NEAR_DUPLICATE:1}
+        strict-window-size: ${RECOMMENDATION_RERANK_GUARDRAIL_HOME_STRICT_WINDOW_SIZE:8}
+        supplement-multiplier: ${RECOMMENDATION_RERANK_GUARDRAIL_HOME_SUPPLEMENT_MULTIPLIER:4}
+      search:
+        max-per-category: ${RECOMMENDATION_RERANK_GUARDRAIL_SEARCH_MAX_PER_CATEGORY:4}
+        max-per-merchant: ${RECOMMENDATION_RERANK_GUARDRAIL_SEARCH_MAX_PER_MERCHANT:3}
+        max-per-near-duplicate: ${RECOMMENDATION_RERANK_GUARDRAIL_SEARCH_MAX_PER_NEAR_DUPLICATE:2}
+        strict-window-size: ${RECOMMENDATION_RERANK_GUARDRAIL_SEARCH_STRICT_WINDOW_SIZE:10}
+        supplement-multiplier: ${RECOMMENDATION_RERANK_GUARDRAIL_SEARCH_SUPPLEMENT_MULTIPLIER:3}
+      detail:
+        max-per-category: ${RECOMMENDATION_RERANK_GUARDRAIL_DETAIL_MAX_PER_CATEGORY:3}
+        max-per-merchant: ${RECOMMENDATION_RERANK_GUARDRAIL_DETAIL_MAX_PER_MERCHANT:2}
+        max-per-near-duplicate: ${RECOMMENDATION_RERANK_GUARDRAIL_DETAIL_MAX_PER_NEAR_DUPLICATE:1}
+        strict-window-size: ${RECOMMENDATION_RERANK_GUARDRAIL_DETAIL_STRICT_WINDOW_SIZE:6}
+        supplement-multiplier: ${RECOMMENDATION_RERANK_GUARDRAIL_DETAIL_SUPPLEMENT_MULTIPLIER:3}
+    fast-negative:
+      enabled: ${RECOMMENDATION_RERANK_FAST_NEGATIVE_ENABLED:true}
+      lookback-minutes: ${RECOMMENDATION_RERANK_FAST_NEGATIVE_LOOKBACK_MINUTES:10}
+      max-history: ${RECOMMENDATION_RERANK_FAST_NEGATIVE_MAX_HISTORY:240}
+      short-dwell-seconds: ${RECOMMENDATION_RERANK_FAST_NEGATIVE_SHORT_DWELL_SECONDS:6}
+      product-penalty: ${RECOMMENDATION_RERANK_FAST_NEGATIVE_PRODUCT_PENALTY:45.0}
+      category-penalty: ${RECOMMENDATION_RERANK_FAST_NEGATIVE_CATEGORY_PENALTY:20.0}
+      dislike-extra-penalty: ${RECOMMENDATION_RERANK_FAST_NEGATIVE_DISLIKE_EXTRA_PENALTY:35.0}
+    quality-gate:
+      enabled: ${RECOMMENDATION_RERANK_QUALITY_GATE_ENABLED:true}
+      lookback-days: ${RECOMMENDATION_RERANK_QUALITY_GATE_LOOKBACK_DAYS:30}
+      max-history: ${RECOMMENDATION_RERANK_QUALITY_GATE_MAX_HISTORY:6000}
+      min-order-sample: ${RECOMMENDATION_RERANK_QUALITY_GATE_MIN_ORDER_SAMPLE:3}
+      high-refund-rate-threshold: ${RECOMMENDATION_RERANK_QUALITY_GATE_HIGH_REFUND_RATE_THRESHOLD:0.22}
+      low-rating-threshold: ${RECOMMENDATION_RERANK_QUALITY_GATE_LOW_RATING_THRESHOLD:3.8}
+      low-stock-threshold: ${RECOMMENDATION_RERANK_QUALITY_GATE_LOW_STOCK_THRESHOLD:8}
+      refund-penalty: ${RECOMMENDATION_RERANK_QUALITY_GATE_REFUND_PENALTY:65.0}
+      rating-penalty: ${RECOMMENDATION_RERANK_QUALITY_GATE_RATING_PENALTY:34.0}
+      stock-penalty: ${RECOMMENDATION_RERANK_QUALITY_GATE_STOCK_PENALTY:28.0}
+      high-value-aov-threshold: ${RECOMMENDATION_RERANK_QUALITY_GATE_HIGH_VALUE_AOV_THRESHOLD:500.0}
+      high-value-penalty-multiplier: ${RECOMMENDATION_RERANK_QUALITY_GATE_HIGH_VALUE_PENALTY_MULTIPLIER:1.35}
+    session-intent:
+      enabled: ${RECOMMENDATION_RERANK_SESSION_INTENT_ENABLED:true}
+      lookback-minutes: ${RECOMMENDATION_RERANK_SESSION_INTENT_LOOKBACK_MINUTES:45}
+      max-history: ${RECOMMENDATION_RERANK_SESSION_INTENT_MAX_HISTORY:160}
+      price-compare-min-products: ${RECOMMENDATION_RERANK_SESSION_INTENT_PRICE_COMPARE_MIN_PRODUCTS:3}
+      price-compare-cv-threshold: ${RECOMMENDATION_RERANK_SESSION_INTENT_PRICE_COMPARE_CV_THRESHOLD:0.35}
+    exploration-dynamic:
+      enabled: ${RECOMMENDATION_RERANK_EXPLORATION_DYNAMIC_ENABLED:true}
+      low-entropy-threshold: ${RECOMMENDATION_RERANK_EXPLORATION_DYNAMIC_LOW_ENTROPY_THRESHOLD:0.45}
+      low-entropy-bonus: ${RECOMMENDATION_RERANK_EXPLORATION_DYNAMIC_LOW_ENTROPY_BONUS:0.10}
+      new-user-bonus: ${RECOMMENDATION_RERANK_EXPLORATION_DYNAMIC_NEW_USER_BONUS:0.10}
+      high-intent-penalty: ${RECOMMENDATION_RERANK_EXPLORATION_DYNAMIC_HIGH_INTENT_PENALTY:0.12}
+      compare-intent-penalty: ${RECOMMENDATION_RERANK_EXPLORATION_DYNAMIC_COMPARE_INTENT_PENALTY:0.06}
+      new-user-behavior-threshold: ${RECOMMENDATION_RERANK_EXPLORATION_DYNAMIC_NEW_USER_BEHAVIOR_THRESHOLD:12}
+    session-dedup:
+      enabled: ${RECOMMENDATION_RERANK_SESSION_DEDUP_ENABLED:true}
+      lookback-minutes: ${RECOMMENDATION_RERANK_SESSION_DEDUP_LOOKBACK_MINUTES:30}
+      history-limit: ${RECOMMENDATION_RERANK_SESSION_DEDUP_HISTORY_LIMIT:300}
+      max-product-exposure: ${RECOMMENDATION_RERANK_SESSION_DEDUP_MAX_PRODUCT_EXPOSURE:1}
+      max-category-exposure: ${RECOMMENDATION_RERANK_SESSION_DEDUP_MAX_CATEGORY_EXPOSURE:4}
+      max-merchant-exposure: ${RECOMMENDATION_RERANK_SESSION_DEDUP_MAX_MERCHANT_EXPOSURE:4}
+    multi-objective:
+      ctr-weight: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_CTR_WEIGHT:0.26}
+      order-rate-weight: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_ORDER_RATE_WEIGHT:0.30}
+      aov-weight: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_AOV_WEIGHT:0.14}
+      gmv-weight: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_GMV_WEIGHT:0.14}
+      diversity-weight: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_DIVERSITY_WEIGHT:0.20}
+      refund-penalty-weight: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_REFUND_PENALTY_WEIGHT:0.10}
+      boost-scale: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_BOOST_SCALE:180.0}
+      metric-lookback-days: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_METRIC_LOOKBACK_DAYS:14}
+      metric-max-rows: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_METRIC_MAX_ROWS:4000}
+      min-exposure-sample: ${RECOMMENDATION_RERANK_MULTI_OBJECTIVE_MIN_EXPOSURE_SAMPLE:12}
+    auto-rollback:
+      enabled: ${RECOMMENDATION_RERANK_AUTO_ROLLBACK_ENABLED:true}
+      check-interval-seconds: ${RECOMMENDATION_RERANK_AUTO_ROLLBACK_CHECK_INTERVAL_SECONDS:60}
+      refund-rate-threshold: ${RECOMMENDATION_RERANK_AUTO_ROLLBACK_REFUND_RATE_THRESHOLD:18.0}
+      retention7d-floor: ${RECOMMENDATION_RERANK_AUTO_ROLLBACK_RETENTION7D_FLOOR:9.0}
+      repurchase-rate-floor: ${RECOMMENDATION_RERANK_AUTO_ROLLBACK_REPURCHASE_RATE_FLOOR:7.0}
+    narrow-guard:
+      enabled: ${RECOMMENDATION_RERANK_NARROW_GUARD_ENABLED:true}
+      ab-enabled: ${RECOMMENDATION_RERANK_NARROW_GUARD_AB_ENABLED:true}
+      ab-treatment-groups: ${RECOMMENDATION_RERANK_NARROW_GUARD_AB_TREATMENT_GROUPS:hybrid,cf_heavy}
+      min-category-entropy: ${RECOMMENDATION_RERANK_NARROW_GUARD_MIN_CATEGORY_ENTROPY:0.62}
+      max-single-category-ratio: ${RECOMMENDATION_RERANK_NARROW_GUARD_MAX_SINGLE_CATEGORY_RATIO:0.68}
+      protected-head-size: ${RECOMMENDATION_RERANK_NARROW_GUARD_PROTECTED_HEAD_SIZE:3}
+      max-adjust-rounds: ${RECOMMENDATION_RERANK_NARROW_GUARD_MAX_ADJUST_ROUNDS:48}
+
+abtest:
+  stratified:
+    new-user-behavior-threshold: ${ABTEST_STRATIFIED_NEW_USER_BEHAVIOR_THRESHOLD:12}
+    high-aov-threshold: ${ABTEST_STRATIFIED_HIGH_AOV_THRESHOLD:300}
+
+im:
+  ticket:
+    sla:
+      scan-interval-ms: ${IM_TICKET_SLA_SCAN_INTERVAL_MS:60000}
+
+stream:
+  realtime:
+    enabled: ${STREAM_REALTIME_ENABLED:true}
+    behavior-stats-key-prefix: ${STREAM_BEHAVIOR_STATS_KEY_PREFIX:stream:user:behavior:dist}
+    category-weight-key-prefix: ${STREAM_CATEGORY_WEIGHT_KEY_PREFIX:stream:user:category:weight}
+    tag-set-key-prefix: ${STREAM_TAG_SET_KEY_PREFIX:stream:user:tags}
+  kafka:
+    enabled: ${STREAM_KAFKA_ENABLED:false}
+    user-behavior-topic: ${STREAM_KAFKA_USER_BEHAVIOR_TOPIC:dws.user_behavior_distribution}
+    user-category-topic: ${STREAM_KAFKA_USER_CATEGORY_TOPIC:dws.user_category_preference}
+    product-hotness-topic: ${STREAM_KAFKA_PRODUCT_HOTNESS_TOPIC:dws.product_hotness_realtime}
+    recommendation-core-metrics-topic: ${STREAM_KAFKA_RECOMMENDATION_CORE_METRICS_TOPIC:dws.recommendation_core_metrics_realtime}
+    product-changed-topic: ${STREAM_KAFKA_PRODUCT_CHANGED_TOPIC:dwd.product_changed_event}
+    product-cdc-topic: ${STREAM_KAFKA_PRODUCT_CDC_TOPIC:cdc.product}
+    dead-letter-suffix: ${STREAM_KAFKA_DEAD_LETTER_SUFFIX:.dlt}
+    group-id: ${STREAM_KAFKA_GROUP_ID:ecommerce-stream-dws}
+    lag-warn-threshold: ${STREAM_KAFKA_LAG_WARN_THRESHOLD:1000}
+    lag-critical-threshold: ${STREAM_KAFKA_LAG_CRITICAL_THRESHOLD:5000}
+    dead-letter-warn-threshold: ${STREAM_KAFKA_DEAD_LETTER_WARN_THRESHOLD:1}
+    dead-letter-critical-threshold: ${STREAM_KAFKA_DEAD_LETTER_CRITICAL_THRESHOLD:20}
+    hot-data-stale-seconds: ${STREAM_KAFKA_HOT_DATA_STALE_SECONDS:180}
+
+analytics:
+  health:
+    freshness-weight: ${ANALYTICS_HEALTH_FRESHNESS_WEIGHT:0.7}
+    volume-weight: ${ANALYTICS_HEALTH_VOLUME_WEIGHT:0.3}
+  competition:
+    oss-prefix: competition/bigdata
+    artifact-lookback-days: 14
+    runner:
+      shell: powershell
+      script-path: scripts/run-competition-bigdata.ps1
+  kmeans:
+    runner:
+      shell: ${ANALYTICS_KMEANS_RUNNER_SHELL:powershell}
+      script-path: ${ANALYTICS_KMEANS_RUNNER_SCRIPT_PATH:}
+    campaign:
+      enabled: ${ANALYTICS_KMEANS_CAMPAIGN_ENABLED:true}
+      auto-process-enabled: ${ANALYTICS_KMEANS_CAMPAIGN_AUTO_PROCESS_ENABLED:false}
+      default-coupon-id: ${ANALYTICS_KMEANS_CAMPAIGN_DEFAULT_COUPON_ID:}
+      scheduler-fixed-delay-ms: ${ANALYTICS_KMEANS_CAMPAIGN_SCHEDULER_FIXED_DELAY_MS:60000}
+      scan-limit: ${ANALYTICS_KMEANS_CAMPAIGN_SCAN_LIMIT:5}
+      recent-days: ${ANALYTICS_KMEANS_CAMPAIGN_RECENT_DAYS:7}
+      notification-title: ${ANALYTICS_KMEANS_CAMPAIGN_NOTIFICATION_TITLE:专属唤醒优惠券已到账}
+      notification-message-type: ${ANALYTICS_KMEANS_CAMPAIGN_NOTIFICATION_MESSAGE_TYPE:promotion}
+  data-quality:
+    enabled: ${ANALYTICS_DATA_QUALITY_ENABLED:true}
+    cron: ${ANALYTICS_DATA_QUALITY_CRON:0 15 3 * * ?}
+    lookback-days: ${ANALYTICS_DATA_QUALITY_LOOKBACK_DAYS:180}
+    gap-neighbor-days: ${ANALYTICS_DATA_QUALITY_GAP_NEIGHBOR_DAYS:3}
+    min-positive-days: ${ANALYTICS_DATA_QUALITY_MIN_POSITIVE_DAYS:5}
+    notify-admin: ${ANALYTICS_DATA_QUALITY_NOTIFY_ADMIN:true}
+    notification-title: ${ANALYTICS_DATA_QUALITY_NOTIFICATION_TITLE:数据质量巡检告警}
+    message-type: ${ANALYTICS_DATA_QUALITY_MESSAGE_TYPE:system}
+  python:
+    enabled: ${ANALYTICS_PYTHON_ENABLED:true}
+    shell: ${ANALYTICS_PYTHON_SHELL:powershell}
+    script-path: ${ANALYTICS_PYTHON_SCRIPT_PATH:}
+    timeout-minutes: ${ANALYTICS_PYTHON_TIMEOUT_MINUTES:90}
+    recommendation:
+      cron: ${ANALYTICS_PYTHON_RECOMMEND_CRON:0 8 * * * ?}
+      jobs: ${ANALYTICS_PYTHON_RECOMMEND_JOBS:recommendation,metrics,quality,ltr}
+    kmeans:
+      cron: ${ANALYTICS_PYTHON_KMEANS_CRON:0 15 2 * * ?}
+      jobs: ${ANALYTICS_PYTHON_KMEANS_JOBS:analytics,kmeans,recommendation,metrics,quality,ltr}
+      k: ${ANALYTICS_PYTHON_KMEANS_K:3}
+      auto-k: ${ANALYTICS_PYTHON_KMEANS_AUTO_K:true}
+      min-k: ${ANALYTICS_PYTHON_KMEANS_MIN_K:2}
+      max-k: ${ANALYTICS_PYTHON_KMEANS_MAX_K:6}
+    backfill:
+      enabled: ${ANALYTICS_KMEANS_BACKFILL_ENABLED:true}
+      cron: ${ANALYTICS_KMEANS_BACKFILL_CRON:0 35 2 * * ?}
+      lookback-days: ${ANALYTICS_KMEANS_BACKFILL_LOOKBACK_DAYS:30}
+      max-users-per-run: ${ANALYTICS_KMEANS_BACKFILL_MAX_USERS_PER_RUN:5000}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.95,0.99
+    tags:
+      application: ${spring.application.name:ecommerce-backend}
+  websocket:
+    enabled: ${MANAGEMENT_WEBSOCKET_ENABLED:true}
+    stream-refresh-interval-ms: ${MANAGEMENT_WEBSOCKET_STREAM_REFRESH_INTERVAL_MS:5000}
+
+performance:
+  sql:
+    slow-threshold-ms: ${PERFORMANCE_SQL_SLOW_THRESHOLD_MS:200}
+  metrics:
+    kafka-lag-refresh-ms: ${PERFORMANCE_METRICS_KAFKA_LAG_REFRESH_MS:15000}
+    stream-monitor-cache-ms: ${PERFORMANCE_METRICS_STREAM_MONITOR_CACHE_MS:5000}
+
+async:
+  executors:
+    default:
+      core-pool-size: ${ASYNC_DEFAULT_CORE_POOL_SIZE:4}
+      max-pool-size: ${ASYNC_DEFAULT_MAX_POOL_SIZE:12}
+      queue-capacity: ${ASYNC_DEFAULT_QUEUE_CAPACITY:500}
+      keep-alive-seconds: ${ASYNC_DEFAULT_KEEP_ALIVE_SECONDS:60}
+    order:
+      core-pool-size: ${ASYNC_ORDER_CORE_POOL_SIZE:8}
+      max-pool-size: ${ASYNC_ORDER_MAX_POOL_SIZE:20}
+      queue-capacity: ${ASYNC_ORDER_QUEUE_CAPACITY:1000}
+      keep-alive-seconds: ${ASYNC_ORDER_KEEP_ALIVE_SECONDS:60}
+    support:
+      core-pool-size: ${ASYNC_SUPPORT_CORE_POOL_SIZE:6}
+      max-pool-size: ${ASYNC_SUPPORT_MAX_POOL_SIZE:16}
+      queue-capacity: ${ASYNC_SUPPORT_QUEUE_CAPACITY:800}
+      keep-alive-seconds: ${ASYNC_SUPPORT_KEEP_ALIVE_SECONDS:60}
+    recommendation:
+      core-pool-size: ${ASYNC_RECOMMEND_CORE_POOL_SIZE:4}
+      max-pool-size: ${ASYNC_RECOMMEND_MAX_POOL_SIZE:12}
+      queue-capacity: ${ASYNC_RECOMMEND_QUEUE_CAPACITY:1200}
+      keep-alive-seconds: ${ASYNC_RECOMMEND_KEEP_ALIVE_SECONDS:60}
+
+risk-control:
+  enabled: ${RISK_CONTROL_ENABLED:true}
+  mode: ${RISK_CONTROL_MODE:block}
+  device-id-header: ${RISK_CONTROL_DEVICE_ID_HEADER:X-Device-Id}
+  trust-proxy-headers: ${RISK_CONTROL_TRUST_PROXY_HEADERS:true}
+
+# 文件存储配置
+storage:
+  type: ${STORAGE_TYPE:local}
+  local:
+    base-path: ./uploads
+    base-url: ${LOCAL_BASE_URL:http://localhost:8080/uploads}
+
+# AI 大模型配置（OpenAI 兼容格式中转站）
+ai:
+  api-url: ${AI_API_URL:https://dashscope.aliyuncs.com/compatible-mode}
+  api-key: ${AI_API_KEY:}
+  model: ${AI_MODEL:qwen-plus}
+  max-tokens: 1024
+  temperature: 0.7
+  connect-timeout-ms: 15000
+  read-timeout-ms: 90000
+  prompt-cache-minutes: 30
+  prompt-product-limit: 20
+  test-max-tokens: 64
+  test-temperature: 0.2
+
+aliyun:
+  oss:
+    endpoint: ${ALIYUN_OSS_ENDPOINT:oss-cn-your-region.aliyuncs.com}
+    access-key-id: ${ALIYUN_OSS_ACCESS_KEY_ID:}
+    access-key-secret: ${ALIYUN_OSS_ACCESS_KEY_SECRET:}
+    bucket-name: ${ALIYUN_OSS_BUCKET_NAME:}
+    url-prefix: ${ALIYUN_OSS_URL_PREFIX:}

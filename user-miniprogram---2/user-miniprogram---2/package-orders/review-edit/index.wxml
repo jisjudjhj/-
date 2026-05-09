@@ -1,0 +1,119 @@
+<view class="review-page">
+  <custom-nav-bar title="发表评价" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <scroll-view class="review-scroll" scroll-y>
+    <view class="hero-block">
+      <text class="hero-kicker">评价中心</text>
+      <text class="hero-title">把真实体验告诉后来的人</text>
+      <text class="hero-desc">评分、图片和一句判断就够了，重点是让下一位买家能快速看懂。</text>
+    </view>
+
+    <view class="product-card" wx:if="{{productName}}">
+      <image wx:if="{{productImage}}" class="product-image" src="{{productImage}}" mode="aspectFill"></image>
+      <view wx:else class="product-image product-image-placeholder">
+        <text>商品图</text>
+      </view>
+      <view class="product-copy">
+        <text class="product-name">{{productName}}</text>
+        <text class="product-meta">订单号 {{orderId}}</text>
+        <text class="product-price" wx:if="{{productPrice}}">¥{{productPrice}}</text>
+      </view>
+    </view>
+
+    <view class="disabled-state" wx:if="{{!loading && !canReview}}">
+      <text class="disabled-title">已评价</text>
+      <text class="disabled-desc">可回订单查看</text>
+    </view>
+
+    <block wx:elif="{{!loading}}">
+      <view class="panel">
+        <view class="panel-head">
+          <text class="panel-title">整体评分</text>
+          <text class="panel-meta">{{rating}} / 5</text>
+        </view>
+        <view class="star-row">
+          <view
+            class="star-item {{rating >= item ? 'star-item-active' : ''}}"
+            wx:for="{{[1,2,3,4,5]}}"
+            wx:key="*this"
+            data-value="{{item}}"
+            bindtap="selectRating"
+          >★</view>
+        </view>
+        <view class="rating-copy">
+          <text>{{rating >= 5 ? '很满意，值得推荐' : (rating >= 4 ? '整体不错，有亮点' : (rating >= 3 ? '中规中矩，基本符合预期' : '有明显问题，需要提醒后面买家'))}}</text>
+        </view>
+      </view>
+
+      <view class="panel">
+        <view class="panel-head">
+          <text class="panel-title">一句评价</text>
+          <text class="panel-meta">{{content.length}} / 300</text>
+        </view>
+        <textarea
+          class="review-input"
+          maxlength="300"
+          placeholder="说说商品质量、做工、包装、物流或者是否值得买"
+          value="{{content}}"
+          bindinput="onContentInput"
+        ></textarea>
+      </view>
+
+      <view class="panel">
+        <view class="panel-head">
+          <text class="panel-title">印象标签</text>
+          <text class="panel-meta">最多 3 个</text>
+        </view>
+        <view class="tag-grid">
+          <view
+            class="tag-pill {{selectedTags.indexOf(item) !== -1 ? 'tag-pill-active' : ''}}"
+            wx:for="{{tagOptions}}"
+            wx:key="*this"
+            data-tag="{{item}}"
+            bindtap="toggleTag"
+          >{{item}}</view>
+        </view>
+      </view>
+
+      <view class="panel">
+        <view class="panel-head">
+          <text class="panel-title">补充图片</text>
+          <text class="panel-meta">{{images.length}} / 6</text>
+        </view>
+        <view class="image-grid">
+          <view
+            class="image-card"
+            wx:for="{{images}}"
+            wx:key="*this"
+          >
+            <image class="image-thumb" src="{{item}}" mode="aspectFill" bindtap="previewImage" data-index="{{index}}"></image>
+            <view class="image-remove" bindtap="removeImage" data-index="{{index}}">删除</view>
+          </view>
+          <view class="image-picker active-opacity" bindtap="chooseImages" wx:if="{{images.length < 6}}">
+            <text class="image-picker-plus">+</text>
+            <text class="image-picker-copy">{{uploading ? '上传中' : '添加图片'}}</text>
+          </view>
+        </view>
+      </view>
+    </block>
+
+    <view class="loading-wrap" wx:if="{{loading}}">
+      <text>准备中</text>
+    </view>
+
+    <view class="page-bottom-spacer page-bottom-spacer--form"></view>
+  </scroll-view>
+
+  <view class="submit-bar">
+    <text class="submit-tip" wx:if="{{loading || checking || uploading || checkFailed || !canReview}}">
+      {{loading || checking ? '校验中' : (uploading ? '上传中' : (checkFailed ? '校验失败' : '已评价'))}}
+    </text>
+    <custom-button
+      type="primary"
+      size="normal"
+      customStyle="width: 100%; height: 84rpx; border-radius: 999rpx;"
+      disabled="{{loading || checking || uploading || submitting || !canReview}}"
+      bind:click="submitReview"
+    >{{loading || checking ? '准备中' : (uploading ? '上传中' : (submitting ? '提交中' : (!canReview ? '已评价' : (checkFailed ? '重试提交' : '提交评价'))))}}</custom-button>
+  </view>
+</view>

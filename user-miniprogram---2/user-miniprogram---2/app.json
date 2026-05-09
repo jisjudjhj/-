@@ -1,0 +1,107 @@
+{
+  "pages": [
+    "pages/splash/index",
+    "pages/home/index",
+    "pages/seckill/index",
+    "pages/explore/index",
+    "pages/cart/index",
+    "pages/profile/index",
+    "pages/login/index",
+    "pages/product-detail/index",
+    "pages/customer-service/index",
+    "pages/customer-chat/index",
+    "pages/search-result/index"
+  ],
+  "subpackages": [
+    {
+      "root": "package-orders",
+      "name": "orders",
+      "pages": [
+        "checkout/index",
+        "orders/index",
+        "order-detail/index",
+        "review-edit/index",
+        "refund-apply/index"
+      ]
+    },
+    {
+      "root": "package-user",
+      "name": "user",
+      "pages": [
+        "messages/index",
+        "coupons/index",
+        "address/index",
+        "wallet/index",
+        "favorites/index",
+        "footprint/index",
+        "settings/index",
+        "about/index",
+        "edit-profile/index"
+      ]
+    },
+    {
+      "root": "package-features",
+      "name": "features",
+      "pages": [
+        "ai-assistant/index",
+        "webview/index"
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/cart/index": {
+      "network": "all",
+      "packages": ["orders"]
+    },
+    "pages/profile/index": {
+      "network": "all",
+      "packages": ["user"]
+    }
+  },
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTitleText": "数智优购",
+    "navigationBarTextStyle": "black",
+    "navigationStyle": "custom"
+  },
+  "tabBar": {
+    "custom": true,
+    "color": "#999999",
+    "selectedColor": "#007AFF",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/explore/index",
+        "text": "探索"
+      },
+      {
+        "pagePath": "pages/cart/index",
+        "text": "购物车"
+      },
+      {
+        "pagePath": "pages/profile/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "usingComponents": {
+    "custom-nav-bar": "/components/custom-nav-bar/index",
+    "custom-button": "/components/custom-button/index",
+    "custom-popup": "/components/custom-popup/index"
+  },
+  "permission": {
+    "scope.userLocation": {
+      "desc": "用于选择收货地址时快速定位附近地点"
+    }
+  },
+  "requiredPrivateInfos": [
+    "chooseLocation"
+  ],
+  "sitemapLocation": "sitemap.json"
+}

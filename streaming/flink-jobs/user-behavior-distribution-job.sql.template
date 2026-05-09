@@ -1,0 +1,57 @@
+-- Flink CDC 直连 MySQL：用户实时行为分布
+-- 运行前请确保：
+-- 1) 本机 Flink 已启动
+-- 2) FLINK_HOME/lib 中已放入：
+--    - Flink CDC MySQL connector
+--    - Flink JDBC connector
+--    - MySQL JDBC driver
+-- 3) MySQL 已开启 binlog（ROW 模式）
+
+SET 'execution.runtime-mode' = 'streaming';
+SET 'table.local-time-zone' = 'Asia/Shanghai';
+
+CREATE TABLE user_behavior_cdc (
+  id BIGINT,
+  user_id BIGINT,
+  product_id BIGINT,
+  behavior_type STRING,
+  search_keyword STRING,
+  duration INT,
+  create_time TIMESTAMP(3),
+  PRIMARY KEY (id) NOT ENFORCED
+) WITH (
+  'connector' = 'mysql-cdc',
+  'hostname' = '__MYSQL_HOST__',
+  'port' = '__MYSQL_PORT__',
+  'username' = '__MYSQL_USERNAME__',
+  'password' = '__MYSQL_PASSWORD__',
+  'database-name' = '__MYSQL_DATABASE__',
+  'table-name' = 'user_behavior'
+);
+
+CREATE TABLE stream_user_behavior_distribution (
+  user_id BIGINT,
+  behavior_type STRING,
+  behavior_count BIGINT,
+  last_event_time TIMESTAMP(3),
+  update_time TIMESTAMP(3),
+  PRIMARY KEY (user_id, behavior_type) NOT ENFORCED
+) WITH (
+  'connector' = 'jdbc',
+  'url' = 'jdbc:mysql://__MYSQL_HOST__:__MYSQL_PORT__/__MYSQL_DATABASE__?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai',
+  'table-name' = 'stream_user_behavior_distribution',
+  'username' = '__MYSQL_USERNAME__',
+  'password' = '__MYSQL_PASSWORD__'
+);
+
+INSERT INTO stream_user_behavior_distribution
+SELECT
+  user_id,
+  behavior_type,
+  COUNT(*) AS behavior_count,
+  MAX(create_time) AS last_event_time,
+  CURRENT_TIMESTAMP AS update_time
+FROM user_behavior_cdc
+WHERE user_id IS NOT NULL
+  AND behavior_type IS NOT NULL
+GROUP BY user_id, behavior_type;

@@ -1,0 +1,2093 @@
+@import "../../app.wxss";
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #fbf9f4 0%, #f4f0e7 52%, #f7f5ef 100%);
+}
+
+.hero-stage {
+  margin: 122rpx 22rpx 0;
+  position: relative;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: -14rpx;
+  border-radius: 36rpx;
+  background: rgba(17, 17, 17, 0.08);
+  filter: blur(18rpx);
+}
+
+.hero-card {
+  position: relative;
+  border-radius: 34rpx;
+  padding: 34rpx 30rpx 30rpx;
+  background: #111111;
+  box-shadow: 0 20rpx 48rpx rgba(19, 19, 19, 0.14);
+  overflow: hidden;
+}
+
+.hero-eyebrow,
+.hero-subtitle,
+.hero-meta-chip,
+.timeline-tip,
+.timeline-week,
+.timeline-countdown,
+.group-desc,
+.group-time,
+.group-meta,
+.group-divider,
+.seckill-countdown,
+.seckill-price-origin,
+.seckill-sold,
+.empty-desc,
+.loading-text {
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.hero-eyebrow {
+  font-size: 18rpx;
+  letter-spacing: 4rpx;
+}
+
+.hero-title,
+.timeline-title,
+.timeline-date,
+.timeline-time,
+.timeline-name,
+.group-title,
+.group-countdown,
+.seckill-title,
+.empty-title,
+.seckill-price-now {
+  color: #181818;
+}
+
+.hero-title {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 44rpx;
+  font-weight: 800;
+  line-height: 1.24;
+  color: #ffffff;
+}
+
+.hero-subtitle {
+  display: block;
+  margin-top: 14rpx;
+  font-size: 23rpx;
+  line-height: 1.6;
+}
+
+.hero-meta-row {
+  margin-top: 18rpx;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.hero-meta-chip,
+.group-status-badge,
+.seckill-status-badge,
+.seckill-action,
+.tab-item.active,
+.timeline-card.selected {
+  border-radius: 999rpx;
+}
+
+.hero-meta-chip {
+  height: 44rpx;
+  padding: 0 16rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.tab-shell {
+  position: sticky;
+  top: 0;
+  z-index: 8;
+  padding-top: 8rpx;
+  margin-top: 18rpx;
+  margin-bottom: 4rpx;
+  background: linear-gradient(180deg, rgba(247, 245, 239, 0.96) 0%, rgba(247, 245, 239, 0.84) 72%, rgba(247, 245, 239, 0) 100%);
+}
+
+.tab-bar {
+  margin: 0 22rpx;
+  padding: 8rpx;
+  border-radius: 24rpx;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12rpx 30rpx rgba(19, 19, 19, 0.08);
+  display: flex;
+  gap: 10rpx;
+}
+
+.tab-item {
+  flex: 1;
+  height: 72rpx;
+  border-radius: 18rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10rpx;
+  color: #64748b;
+}
+
+.tab-item.active {
+  background: #111111;
+  color: #ffffff;
+}
+
+.tab-label {
+  font-size: 25rpx;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tab-count {
+  min-width: 34rpx;
+  height: 34rpx;
+  padding: 0 9rpx;
+  border-radius: 999rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: 700;
+  color: #6f6759;
+  background: #f1ebe0;
+}
+
+.tab-item.active .tab-count {
+  color: #111111;
+  background: #ffffff;
+}
+
+.timeline-panel {
+  margin: 12rpx 22rpx 20rpx;
+  border-radius: 26rpx;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12rpx 30rpx rgba(19, 19, 19, 0.08);
+  padding: 20rpx 0 16rpx;
+  border: 2rpx solid rgba(17, 17, 17, 0.04);
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12rpx;
+  padding: 0 20rpx 14rpx;
+}
+
+.timeline-title {
+  font-size: 28rpx;
+  font-weight: 800;
+}
+
+.timeline-tip,
+.timeline-status,
+.group-status-badge.upcoming,
+.group-status-badge.history,
+.seckill-status-badge.pending,
+.seckill-status-badge.ended,
+.seckill-action {
+  color: #6f6759;
+}
+
+.timeline-tip {
+  font-size: 21rpx;
+}
+
+.timeline-scroll {
+  width: 100%;
+  white-space: nowrap;
+}
+
+.timeline-list {
+  position: relative;
+  display: inline-flex;
+  gap: 18rpx;
+  align-items: flex-start;
+  padding: 12rpx 20rpx;
+}
+
+.timeline-track {
+  position: absolute;
+  top: 66rpx;
+  left: 44rpx;
+  right: 44rpx;
+  height: 4rpx;
+  border-radius: 999rpx;
+  background: rgba(18, 18, 18, 0.08);
+}
+
+.timeline-session {
+  position: relative;
+  width: 184rpx;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
+
+.timeline-date {
+  font-size: 24rpx;
+  font-weight: 700;
+}
+
+.timeline-week {
+  margin-top: 4rpx;
+  font-size: 20rpx;
+  color: #9a9388;
+}
+
+.timeline-node-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 10rpx;
+}
+
+.timeline-node {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+  border: 4rpx solid #ffffff;
+  background: #d9d2c4;
+}
+
+.timeline-node.active {
+  background: #111111;
+}
+
+.timeline-node.upcoming {
+  background: #9a9388;
+}
+
+.timeline-card {
+  margin-top: 12rpx;
+  width: 100%;
+  min-height: 130rpx;
+  border-radius: 20rpx;
+  padding: 14rpx 14rpx 18rpx;
+  background: #f8f4eb;
+}
+
+.timeline-card.selected {
+  background: #111111;
+}
+
+.timeline-card.selected .timeline-time,
+.timeline-card.selected .timeline-status,
+.timeline-card.selected .timeline-name,
+.timeline-card.selected .timeline-countdown {
+  color: #ffffff;
+}
+
+.list-wrap {
+  padding: 0 22rpx 6rpx;
+}
+
+.loading-wrap,
+.empty-wrap,
+.activity-group {
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 14rpx 34rpx rgba(19, 19, 19, 0.08);
+}
+
+.loading-wrap,
+.empty-wrap {
+  margin-top: 14rpx;
+  border-radius: 24rpx;
+  padding: 46rpx 24rpx;
+  text-align: center;
+}
+
+.loading-text {
+  font-size: 26rpx;
+  color: #6f6759;
+}
+
+.empty-title {
+  font-size: 30rpx;
+  font-weight: 800;
+}
+
+.empty-desc {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  color: #6f6759;
+}
+
+.group-list {
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.group-anchor {
+  height: 400rpx;
+  margin-top: -400rpx;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.activity-group {
+  border-radius: 30rpx;
+  padding: 26rpx 24rpx;
+  border: 2rpx solid rgba(17, 17, 17, 0.04);
+}
+
+.activity-group.selected {
+  box-shadow: 0 18rpx 40rpx rgba(19, 19, 19, 0.1);
+}
+
+.group-header {
+  display: flex;
+  gap: 16rpx;
+  align-items: flex-start;
+}
+
+.group-cover {
+  width: 150rpx;
+  height: 150rpx;
+  border-radius: 20rpx;
+  background: #efe9de;
+  flex-shrink: 0;
+}
+
+.group-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.group-kicker {
+  display: inline-block;
+  color: #9a9388;
+  font-size: 18rpx;
+  font-weight: 700;
+  letter-spacing: 2rpx;
+  margin-bottom: 10rpx;
+}
+
+.group-title-row {
+  display: flex;
+  gap: 10rpx;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.group-status-badge,
+.seckill-status-badge,
+.seckill-action {
+  height: 38rpx;
+  padding: 0 14rpx;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20rpx;
+  font-weight: 700;
+  background: #f1ebe0;
+}
+
+.group-status-badge.active,
+.seckill-status-badge.active,
+.seckill-action.active {
+  color: #ffffff;
+  background: #111111;
+}
+
+.group-title {
+  flex: 1;
+  min-width: 0;
+  font-size: 32rpx;
+  font-weight: 800;
+  line-height: 1.35;
+}
+
+.group-desc {
+  margin-top: 10rpx;
+  font-size: 23rpx;
+  line-height: 1.68;
+  color: #6f6759;
+}
+
+.group-time,
+.group-meta {
+  margin-top: 10rpx;
+  font-size: 21rpx;
+  color: #6f6759;
+}
+
+.group-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.group-divider {
+  opacity: 0.55;
+}
+
+.product-list {
+  margin-top: 20rpx;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.seckill-item {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.seckill-item product-card {
+  display: block;
+}
+
+.seckill-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12rpx;
+  margin-top: 10rpx;
+  padding: 0 4rpx;
+}
+
+.seckill-card-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.seckill-origin,
+.seckill-countdown,
+.seckill-sold {
+  color: #6f6759;
+  font-size: 20rpx;
+  line-height: 1.4;
+}
+
+.seckill-origin,
+.seckill-countdown {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.seckill-foot-note {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  margin-top: 10rpx;
+  padding: 0 4rpx;
+}
+
+.seckill-note-divider {
+  color: #b1aa9f;
+  font-size: 18rpx;
+}
+
+.seckill-image {
+  width: 100%;
+  height: 286rpx;
+  background: #efe9de;
+}
+
+.seckill-content {
+  padding: 24rpx 22rpx;
+}
+
+.seckill-title {
+  font-size: 30rpx;
+  line-height: 1.4;
+  font-weight: 700;
+}
+
+.seckill-status-row,
+.seckill-price-row,
+.seckill-foot {
+  margin-top: 14rpx;
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  flex-wrap: wrap;
+  justify-content: space-between;
+}
+
+.seckill-countdown,
+.seckill-sold,
+.seckill-price-origin {
+  color: #6f6759;
+  font-size: 22rpx;
+}
+
+.seckill-price-now {
+  font-size: 42rpx;
+  font-weight: 800;
+}
+
+.seckill-price-symbol {
+  font-size: 22rpx;
+  margin-right: 4rpx;
+}
+
+/* Unified iOS white refinement */
+.container {
+  background: #ffffff;
+}
+
+.hero-stage {
+  margin: 120rpx 24rpx 0;
+}
+
+.hero-overlay {
+  inset: -10rpx;
+  background: rgba(0, 122, 255, 0.08);
+  filter: blur(20rpx);
+}
+
+.hero-card {
+  padding: 30rpx 28rpx 28rpx;
+  border-radius: 30rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(60, 60, 67, 0.1);
+  box-shadow: none;
+}
+
+.hero-eyebrow {
+  color: #8e8e93;
+  font-size: 18rpx;
+  letter-spacing: 1.6rpx;
+}
+
+.hero-title {
+  margin-top: 12rpx;
+  font-size: 44rpx;
+  font-weight: 700;
+  color: #111111;
+}
+
+.hero-subtitle {
+  margin-top: 12rpx;
+  font-size: 24rpx;
+  line-height: 1.55;
+  color: #6e6e73;
+}
+
+.hero-meta-row {
+  margin-top: 18rpx;
+  gap: 10rpx;
+}
+
+.hero-meta-chip {
+  height: 38rpx;
+  padding: 0 14rpx;
+  font-size: 18rpx;
+  color: #007aff;
+  background: #f5f5f7;
+}
+
+.tab-shell {
+  padding-top: 8rpx;
+  margin-top: 16rpx;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.82) 72%, rgba(255, 255, 255, 0) 100%);
+}
+
+.tab-bar {
+  margin: 0 24rpx;
+  padding: 6rpx;
+  border-radius: 22rpx;
+  background: #f5f5f7;
+  box-shadow: none;
+}
+
+.tab-item {
+  height: 68rpx;
+  border-radius: 18rpx;
+  color: #6e6e73;
+}
+
+.tab-item.active {
+  background: #007aff;
+  color: #ffffff;
+}
+
+.tab-label {
+  font-size: 24rpx;
+  font-weight: 600;
+}
+
+.tab-count {
+  min-width: 32rpx;
+  height: 32rpx;
+  font-size: 18rpx;
+  color: #6e6e73;
+  background: #ffffff;
+}
+
+.tab-item.active .tab-count {
+  color: #007aff;
+}
+
+.timeline-panel {
+  margin: 10rpx 24rpx 18rpx;
+  padding: 18rpx 0 14rpx;
+  border-radius: 26rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(60, 60, 67, 0.1);
+  box-shadow: none;
+}
+
+.timeline-header {
+  padding: 0 18rpx 14rpx;
+}
+
+.timeline-title {
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #111111;
+}
+
+.timeline-tip,
+.timeline-week,
+.timeline-countdown {
+  color: #8e8e93;
+}
+
+.timeline-tip {
+  font-size: 20rpx;
+}
+
+.timeline-track {
+  background: rgba(60, 60, 67, 0.12);
+}
+
+.timeline-date,
+.timeline-time,
+.timeline-name {
+  color: #111111;
+}
+
+.timeline-date {
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.timeline-node {
+  background: #c7c7cc;
+}
+
+.timeline-node.active {
+  background: #007aff;
+}
+
+.timeline-node.upcoming {
+  background: #ff9f0a;
+}
+
+.timeline-card {
+  min-height: 122rpx;
+  padding: 14rpx;
+  border-radius: 20rpx;
+  background: #f5f5f7;
+}
+
+.timeline-card.selected {
+  background: #eaf3ff;
+}
+
+.timeline-card.selected .timeline-time,
+.timeline-card.selected .timeline-status,
+.timeline-card.selected .timeline-name,
+.timeline-card.selected .timeline-countdown {
+  color: #007aff;
+}
+
+.timeline-status,
+.group-status-badge.upcoming,
+.group-status-badge.history,
+.seckill-status-badge.pending,
+.seckill-status-badge.ended,
+.seckill-action {
+  color: #6e6e73;
+}
+
+.list-wrap {
+  padding: 0 24rpx 6rpx;
+}
+
+.loading-wrap,
+.empty-wrap,
+.activity-group,
+.seckill-item {
+  background: #ffffff;
+  border: 1rpx solid rgba(60, 60, 67, 0.1);
+  box-shadow: none;
+}
+
+.loading-wrap,
+.empty-wrap {
+  margin-top: 12rpx;
+  padding: 40rpx 22rpx;
+}
+
+.loading-text,
+.empty-desc,
+.group-desc,
+.group-time,
+.group-meta,
+.group-divider,
+.seckill-countdown,
+.seckill-price-origin,
+.seckill-sold {
+  color: #6e6e73;
+}
+
+.empty-title,
+.group-title,
+.group-countdown,
+.seckill-title,
+.seckill-price-now {
+  color: #111111;
+}
+
+.group-list {
+  gap: 16rpx;
+}
+
+.activity-group {
+  padding: 24rpx 22rpx;
+  border-radius: 28rpx;
+}
+
+.activity-group.selected {
+  border-color: rgba(0, 122, 255, 0.14);
+}
+
+.group-cover {
+  border-radius: 18rpx;
+  background: #f5f5f7;
+}
+
+.group-status-badge,
+.seckill-status-badge,
+.seckill-action {
+  height: 36rpx;
+  padding: 0 12rpx;
+  font-size: 18rpx;
+  font-weight: 600;
+  background: #f5f5f7;
+}
+
+.group-status-badge.active,
+.seckill-status-badge.active,
+.seckill-action.active {
+  background: #007aff;
+  color: #ffffff;
+}
+
+.group-title {
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.group-desc {
+  font-size: 22rpx;
+  line-height: 1.55;
+}
+
+.group-time,
+.group-meta {
+  margin-top: 8rpx;
+  font-size: 20rpx;
+}
+
+.product-list {
+  margin-top: 18rpx;
+  gap: 14rpx;
+}
+
+.seckill-item {
+  border-radius: 24rpx;
+}
+
+.seckill-image {
+  height: 276rpx;
+  background: #f5f5f7;
+}
+
+.seckill-content {
+  padding: 22rpx 20rpx;
+}
+
+.seckill-title {
+  font-size: 28rpx;
+  line-height: 1.42;
+  font-weight: 600;
+}
+
+.seckill-status-row,
+.seckill-price-row,
+.seckill-foot {
+  margin-top: 12rpx;
+}
+
+.seckill-countdown,
+.seckill-sold,
+.seckill-price-origin {
+  font-size: 20rpx;
+}
+
+.seckill-price-now {
+  font-size: 38rpx;
+  font-weight: 700;
+}
+
+.seckill-price-symbol {
+  font-size: 20rpx;
+}
+
+.timeline-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8rpx;
+}
+
+.group-summary {
+  color: #6e6e73;
+}
+
+/* Final Douyin mall white refinement */
+.container {
+  background: #ffffff;
+}
+
+.hero-stage {
+  margin: 118rpx 20rpx 0;
+}
+
+.hero-overlay {
+  inset: -10rpx;
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.hero-card {
+  border-radius: 28rpx;
+  padding: 28rpx 24rpx 24rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(22, 24, 35, 0.08);
+}
+
+.hero-eyebrow,
+.hero-subtitle,
+.hero-meta-chip,
+.timeline-tip,
+.timeline-week,
+.timeline-countdown,
+.group-desc,
+.group-time,
+.group-meta,
+.group-divider,
+.seckill-countdown,
+.seckill-price-origin,
+.seckill-sold,
+.empty-desc,
+.loading-text {
+  color: #747d8c;
+}
+
+.hero-title,
+.timeline-title,
+.timeline-date,
+.timeline-time,
+.timeline-name,
+.group-title,
+.group-countdown,
+.seckill-title,
+.empty-title,
+.seckill-price-now {
+  color: #161823;
+}
+
+/* Layout audit final override at file end */
+.container {
+  background: #f6f7fb;
+}
+
+.hero-stage {
+  margin: 112rpx 20rpx 0;
+}
+
+.hero-card {
+  padding: 22rpx 20rpx;
+  border-radius: 20rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(17, 17, 17, 0.06);
+  box-shadow: none;
+}
+
+.hero-title {
+  margin-top: 8rpx;
+  font-size: 32rpx;
+  line-height: 1.22;
+  color: #161823;
+  letter-spacing: 0;
+}
+
+.hero-subtitle {
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  line-height: 1.5;
+  color: #747d8c;
+}
+
+.hero-meta-row {
+  display: none;
+}
+
+.tab-bar {
+  height: 64rpx;
+  padding: 4rpx;
+  border-radius: 18rpx;
+  box-shadow: none;
+}
+
+.tab-item {
+  height: 56rpx;
+  border-radius: 14rpx;
+}
+
+.tab-label {
+  font-size: 22rpx;
+}
+
+.timeline-panel {
+  margin: 8rpx 20rpx 14rpx;
+  padding: 14rpx 0 10rpx;
+  border-radius: 18rpx;
+}
+
+.timeline-tip {
+  display: none;
+}
+
+.timeline-session {
+  width: 156rpx;
+}
+
+.timeline-card {
+  min-height: 104rpx;
+  padding: 12rpx;
+}
+
+.activity-group {
+  padding: 18rpx 16rpx;
+  border-radius: 20rpx;
+  box-shadow: none;
+}
+
+.group-cover {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 14rpx;
+}
+
+.group-title {
+  font-size: 26rpx;
+  line-height: 1.32;
+}
+
+.group-desc {
+  display: none;
+}
+
+.group-time,
+.group-meta {
+  font-size: 19rpx;
+  line-height: 1.45;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.seckill-item {
+  min-width: 0;
+  border-radius: 18rpx;
+  box-shadow: none;
+}
+
+.seckill-image {
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.seckill-content {
+  min-height: 208rpx;
+  padding: 14rpx 12rpx;
+}
+
+.seckill-title {
+  min-height: 62rpx;
+  font-size: 22rpx;
+  line-height: 1.38;
+}
+
+.seckill-info-line,
+.seckill-countdown,
+.seckill-sold,
+.seckill-price-origin {
+  font-size: 17rpx;
+}
+
+.seckill-status-badge {
+  height: 32rpx;
+  padding: 0 10rpx;
+  font-size: 16rpx;
+}
+
+.seckill-price-now {
+  font-size: 30rpx;
+  color: #007AFF;
+}
+
+.seckill-action {
+  height: 36rpx;
+  padding: 0 10rpx;
+  font-size: 16rpx;
+}
+
+/* Final product-card override: this must stay at the end of the file. */
+.product-list {
+  margin-top: 22rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.seckill-item {
+  display: grid;
+  grid-template-columns: 188rpx minmax(0, 1fr);
+  gap: 18rpx;
+  min-height: 214rpx;
+  padding: 16rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(22, 24, 35, 0.08);
+  box-shadow: 0 10rpx 24rpx rgba(22, 24, 35, 0.05);
+  overflow: hidden;
+}
+
+/* Cardless seckill rows: list entries use separators instead of boxes. */
+.product-list {
+  gap: 0 !important;
+}
+
+.seckill-item {
+  padding: 20rpx 0 !important;
+  border: 0 !important;
+  border-bottom: 1rpx solid var(--border-light) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.seckill-image-wrap,
+.seckill-product-image {
+  border-radius: 22rpx !important;
+  overflow: hidden;
+}
+
+/* Readability pass: seckill list and status */
+.group-time,
+.group-meta,
+.seckill-info-line,
+.seckill-countdown,
+.seckill-sold,
+.seckill-price-origin {
+  font-size: 22rpx !important;
+  line-height: 1.42 !important;
+}
+
+.seckill-title {
+  min-height: 72rpx !important;
+  font-size: 27rpx !important;
+  line-height: 1.38 !important;
+}
+
+.seckill-status-badge,
+.seckill-action {
+  min-height: 40rpx !important;
+  padding: 0 14rpx !important;
+  font-size: 21rpx !important;
+  line-height: 40rpx !important;
+}
+
+.seckill-price-now {
+  font-size: 38rpx !important;
+}
+
+.seckill-item {
+  grid-template-columns: 204rpx minmax(0, 1fr) !important;
+  min-height: 236rpx !important;
+}
+
+/* Commerce product list: keep the seckill page image-led and readable */
+.product-list {
+  margin-top: 22rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.seckill-item {
+  display: grid;
+  grid-template-columns: 188rpx minmax(0, 1fr);
+  gap: 18rpx;
+  min-height: 214rpx;
+  padding: 16rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(22, 24, 35, 0.08);
+  box-shadow: 0 10rpx 24rpx rgba(22, 24, 35, 0.05);
+  overflow: hidden;
+}
+
+.seckill-image-wrap {
+  position: relative;
+  width: 188rpx;
+  height: 188rpx;
+  border-radius: 20rpx;
+  overflow: hidden;
+  background: #f6f7fb;
+}
+
+.seckill-product-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: #f6f7fb;
+}
+
+.seckill-product-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(0, 122, 255, 0.16), transparent 32%),
+    linear-gradient(135deg, #fff5f7 0%, #f2f5fb 100%);
+}
+
+.seckill-product-placeholder-text {
+  color: #9aa3b2;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.seckill-image-badge {
+  position: absolute;
+  left: 10rpx;
+  top: 10rpx;
+  height: 34rpx;
+  padding: 0 12rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 18rpx;
+  font-weight: 700;
+  background: rgba(22, 24, 35, 0.72);
+  backdrop-filter: blur(10rpx);
+}
+
+.seckill-image-badge.active {
+  background: #007AFF;
+}
+
+.seckill-image-badge.upcoming {
+  background: #ff9f0a;
+}
+
+.seckill-image-badge.history {
+  background: rgba(22, 24, 35, 0.58);
+}
+
+.seckill-product-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 10rpx;
+}
+
+.seckill-product-title {
+  color: #161823;
+  font-size: 28rpx;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.seckill-product-sub {
+  display: block;
+  margin-top: 8rpx;
+  color: #747d8c;
+  font-size: 21rpx;
+  line-height: 1.4;
+}
+
+.seckill-price-line {
+  display: flex;
+  align-items: baseline;
+  gap: 12rpx;
+}
+
+.seckill-price-main {
+  display: flex;
+  align-items: baseline;
+  color: #007AFF;
+}
+
+.seckill-price-main .seckill-price-symbol {
+  margin-right: 2rpx;
+  color: #007AFF;
+  font-size: 22rpx;
+  font-weight: 800;
+}
+
+.seckill-price-main .seckill-price-now {
+  color: #007AFF;
+  font-size: 38rpx;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.seckill-origin {
+  color: #9aa3b2;
+  font-size: 21rpx;
+  text-decoration: line-through;
+}
+
+.seckill-progress {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.seckill-progress-bar {
+  flex: 1;
+  height: 12rpx;
+  border-radius: 999rpx;
+  overflow: hidden;
+  background: #f0f2f6;
+}
+
+.seckill-progress-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #4DA3FF 0%, #007AFF 100%);
+}
+
+.seckill-progress-text {
+  flex-shrink: 0;
+  color: #747d8c;
+  font-size: 20rpx;
+}
+
+.seckill-product-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14rpx;
+}
+
+.seckill-product-foot .seckill-countdown {
+  flex: 1;
+  min-width: 0;
+  color: #747d8c;
+  font-size: 21rpx;
+}
+
+.seckill-product-foot .seckill-action {
+  flex-shrink: 0;
+  height: 50rpx;
+  min-width: 128rpx;
+  padding: 0 18rpx;
+  border-radius: 999rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #747d8c;
+  font-size: 22rpx;
+  font-weight: 700;
+  background: #f2f4f7;
+}
+
+.seckill-product-foot .seckill-action.active {
+  color: #ffffff;
+  background: #007AFF;
+  box-shadow: 0 8rpx 16rpx rgba(0, 122, 255, 0.2);
+}
+
+/* Layout audit final override: keep seckill page compact and predictable */
+.container {
+  background: #f6f7fb;
+}
+
+.hero-stage {
+  margin: 112rpx 20rpx 0;
+}
+
+.hero-card {
+  padding: 22rpx 20rpx;
+  border-radius: 20rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(17, 17, 17, 0.06);
+  box-shadow: none;
+}
+
+.hero-title {
+  margin-top: 8rpx;
+  font-size: 32rpx;
+  line-height: 1.22;
+  color: #161823;
+  letter-spacing: 0;
+}
+
+.hero-subtitle {
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  line-height: 1.5;
+  color: #747d8c;
+}
+
+.hero-meta-row {
+  display: none;
+}
+
+.tab-shell {
+  margin-top: 10rpx;
+}
+
+.tab-bar {
+  height: 64rpx;
+  padding: 4rpx;
+  border-radius: 18rpx;
+  box-shadow: none;
+}
+
+.tab-item {
+  height: 56rpx;
+  border-radius: 14rpx;
+}
+
+.tab-label {
+  font-size: 22rpx;
+}
+
+.timeline-panel {
+  margin: 8rpx 20rpx 14rpx;
+  padding: 14rpx 0 10rpx;
+  border-radius: 18rpx;
+}
+
+.timeline-tip {
+  display: none;
+}
+
+.timeline-session {
+  width: 156rpx;
+}
+
+.timeline-card {
+  min-height: 104rpx;
+  padding: 12rpx;
+}
+
+.activity-group {
+  padding: 18rpx 16rpx;
+  border-radius: 20rpx;
+  box-shadow: none;
+}
+
+.group-cover {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 14rpx;
+}
+
+.group-title {
+  font-size: 26rpx;
+  line-height: 1.32;
+}
+
+.group-desc {
+  display: none;
+}
+
+.group-time,
+.group-meta {
+  font-size: 19rpx;
+  line-height: 1.45;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.seckill-item {
+  min-width: 0;
+  border-radius: 18rpx;
+  box-shadow: none;
+}
+
+.seckill-image {
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.seckill-content {
+  min-height: 208rpx;
+  padding: 14rpx 12rpx;
+}
+
+.seckill-title {
+  min-height: 62rpx;
+  font-size: 22rpx;
+  line-height: 1.38;
+}
+
+.seckill-info-line,
+.seckill-countdown,
+.seckill-sold,
+.seckill-price-origin {
+  font-size: 17rpx;
+}
+
+.seckill-status-badge {
+  height: 32rpx;
+  padding: 0 10rpx;
+  font-size: 16rpx;
+}
+
+.seckill-price-now {
+  font-size: 30rpx;
+  color: #007AFF;
+}
+
+.seckill-action {
+  height: 36rpx;
+  padding: 0 10rpx;
+  font-size: 16rpx;
+}
+
+/* Layout audit: reduce event chrome and keep product cards consistent */
+.container {
+  background: #f6f7fb;
+}
+
+.hero-stage {
+  margin: 112rpx 20rpx 0;
+}
+
+.hero-card {
+  padding: 22rpx 20rpx;
+  border-radius: 20rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(17, 17, 17, 0.06);
+  box-shadow: none;
+}
+
+.hero-title {
+  margin-top: 8rpx;
+  font-size: 32rpx;
+  line-height: 1.22;
+  color: #161823;
+  letter-spacing: 0;
+}
+
+.hero-subtitle {
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  line-height: 1.5;
+  color: #747d8c;
+}
+
+.hero-meta-row {
+  display: none;
+}
+
+.tab-shell {
+  top: 0;
+  margin-top: 10rpx;
+}
+
+.tab-bar {
+  height: 64rpx;
+  padding: 4rpx;
+  border-radius: 18rpx;
+  box-shadow: none;
+}
+
+.tab-item {
+  height: 56rpx;
+  border-radius: 14rpx;
+}
+
+.tab-label {
+  font-size: 22rpx;
+}
+
+.timeline-panel {
+  margin: 8rpx 20rpx 14rpx;
+  padding: 14rpx 0 10rpx;
+  border-radius: 18rpx;
+}
+
+.timeline-header {
+  padding: 0 16rpx 10rpx;
+}
+
+.timeline-tip {
+  display: none;
+}
+
+.timeline-session {
+  width: 156rpx;
+}
+
+.timeline-card {
+  min-height: 104rpx;
+  padding: 12rpx;
+}
+
+.list-wrap {
+  padding: 0 20rpx 6rpx;
+}
+
+.activity-group {
+  padding: 18rpx 16rpx;
+  border-radius: 20rpx;
+  box-shadow: none;
+}
+
+.group-cover {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 14rpx;
+}
+
+.group-title {
+  font-size: 26rpx;
+  line-height: 1.32;
+}
+
+.group-desc {
+  display: none;
+}
+
+.group-time,
+.group-meta {
+  font-size: 19rpx;
+  line-height: 1.45;
+}
+
+.product-list {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.seckill-item {
+  border-radius: 18rpx;
+  box-shadow: none;
+  min-width: 0;
+}
+
+.seckill-image {
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.seckill-content {
+  min-height: 208rpx;
+  padding: 14rpx 12rpx;
+}
+
+.seckill-title {
+  min-height: 62rpx;
+  font-size: 22rpx;
+  line-height: 1.38;
+}
+
+.seckill-info-line,
+.seckill-countdown,
+.seckill-sold,
+.seckill-price-origin {
+  font-size: 17rpx;
+}
+
+.seckill-status-row {
+  align-items: flex-start;
+}
+
+.seckill-status-badge {
+  height: 32rpx;
+  padding: 0 10rpx;
+  font-size: 16rpx;
+}
+
+.seckill-price-now {
+  font-size: 30rpx;
+  color: #007AFF;
+}
+
+.seckill-action {
+  height: 36rpx;
+  padding: 0 10rpx;
+  font-size: 16rpx;
+}
+
+/* Unified two-column product cards */
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16rpx;
+}
+
+.seckill-item {
+  min-width: 0;
+  border-radius: 24rpx;
+}
+
+.seckill-image {
+  width: 100%;
+  height: 300rpx;
+  display: block;
+}
+
+.seckill-content {
+  padding: 18rpx 16rpx 16rpx;
+}
+
+.seckill-title {
+  min-height: 68rpx;
+  font-size: 24rpx;
+  line-height: 1.42;
+}
+
+.seckill-info-line {
+  margin-top: 8rpx;
+  font-size: 18rpx;
+  line-height: 1.45;
+  color: #747d8c;
+}
+
+.seckill-status-row,
+.seckill-price-row,
+.seckill-foot {
+  margin-top: 10rpx;
+}
+
+.seckill-price-now {
+  font-size: 32rpx;
+}
+
+.seckill-action {
+  height: 42rpx;
+  padding: 0 14rpx;
+  font-size: 18rpx;
+}
+
+/* Unified commerce detail pass */
+.container {
+  background: var(--page-shell-bg);
+}
+
+.hero-stage {
+  margin: 118rpx 20rpx 0;
+}
+
+.hero-overlay {
+  display: none;
+}
+
+.hero-card {
+  border-radius: 30rpx;
+  padding: 30rpx 24rpx;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(0, 122, 255, 0.35), transparent 34%),
+    linear-gradient(135deg, #111111 0%, #2a2d35 100%);
+  box-shadow: 0 18rpx 40rpx rgba(17, 17, 17, 0.16);
+}
+
+.hero-title {
+  font-size: 40rpx;
+}
+
+.tab-shell {
+  background: linear-gradient(180deg, rgba(245, 246, 248, 0.94) 0%, rgba(245, 246, 248, 0.72) 72%, rgba(245, 246, 248, 0) 100%);
+}
+
+.tab-bar,
+.timeline-panel,
+.activity-group,
+.seckill-item,
+.loading-wrap,
+.empty-wrap {
+  border-radius: 28rpx;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1rpx solid rgba(17, 17, 17, 0.06);
+  box-shadow: 0 12rpx 28rpx rgba(17, 17, 17, 0.05);
+}
+
+.tab-bar {
+  margin: 0 20rpx;
+}
+
+.tab-item.active,
+.timeline-card.selected {
+  background: #111111;
+}
+
+.list-wrap {
+  padding: 0 20rpx 6rpx;
+}
+
+.seckill-price-now,
+.seckill-price-symbol {
+  color: #007AFF;
+}
+
+.group-status-badge.active,
+.seckill-status-badge.active,
+.seckill-action.active {
+  background: #007AFF;
+  color: #ffffff;
+}
+
+.hero-meta-chip {
+  background: rgba(0, 122, 255, 0.1);
+  color: #007AFF;
+}
+
+.tab-shell {
+  margin-top: 14rpx;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 255, 255, 0.82) 72%, rgba(255, 255, 255, 0) 100%);
+}
+
+.tab-bar {
+  margin: 0 20rpx;
+  background: #f6f7fb;
+  border-radius: 20rpx;
+}
+
+.tab-item {
+  color: #717a89;
+}
+
+.tab-item.active {
+  background: #007AFF;
+  color: #ffffff;
+}
+
+.tab-item.active .tab-count {
+  color: #007AFF;
+}
+
+.timeline-panel {
+  margin: 10rpx 20rpx 16rpx;
+  border-radius: 22rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(22, 24, 35, 0.08);
+}
+
+.timeline-track {
+  background: rgba(22, 24, 35, 0.12);
+}
+
+.timeline-node {
+  background: #c5cedb;
+}
+
+.timeline-node.active {
+  background: #007AFF;
+}
+
+.timeline-card {
+  background: #f6f7fb;
+}
+
+.timeline-card.selected {
+  background: rgba(0, 122, 255, 0.1);
+}
+
+.timeline-card.selected .timeline-time,
+.timeline-card.selected .timeline-status,
+.timeline-card.selected .timeline-name,
+.timeline-card.selected .timeline-countdown {
+  color: #007AFF;
+}
+
+.list-wrap {
+  padding: 0 20rpx 6rpx;
+}
+
+.loading-wrap,
+.empty-wrap,
+.activity-group,
+.seckill-item {
+  background: #ffffff;
+  border: 1rpx solid rgba(22, 24, 35, 0.08);
+  box-shadow: none;
+}
+
+.activity-group {
+  border-radius: 24rpx;
+  padding: 22rpx 20rpx;
+}
+
+.activity-group.selected {
+  border-color: rgba(0, 122, 255, 0.2);
+}
+
+.group-cover,
+.seckill-image {
+  background: #f6f7fb;
+}
+
+.group-cover-placeholder,
+.seckill-image-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.group-cover-placeholder::before,
+.seckill-image-placeholder::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(0, 122, 255, 0.08) 0%, rgba(255, 255, 255, 0) 42%),
+    linear-gradient(315deg, rgba(0, 122, 255, 0.08) 0%, rgba(255, 255, 255, 0) 40%),
+    #f6f7fb;
+}
+
+.group-cover-placeholder-text,
+.seckill-image-placeholder-text {
+  position: relative;
+  z-index: 1;
+  color: #8a93a3;
+  font-size: 22rpx;
+  font-weight: 600;
+}
+
+.group-cover-placeholder-text {
+  font-size: 20rpx;
+}
+
+.group-status-badge,
+.seckill-status-badge,
+.seckill-action {
+  background: #f6f7fb;
+  color: #6f7888;
+}
+
+.group-status-badge.active,
+.seckill-status-badge.active,
+.seckill-action.active {
+  background: #007AFF;
+  color: #ffffff;
+}
+
+.seckill-price-now {
+  color: #161823;
+}
+
+/* Layout audit final override at file end */
+.container {
+  background: #f6f7fb;
+}
+
+.hero-stage {
+  margin: 112rpx 20rpx 0;
+}
+
+.hero-card {
+  padding: 22rpx 20rpx;
+  border-radius: 20rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(17, 17, 17, 0.06);
+  box-shadow: none;
+}
+
+.hero-title {
+  margin-top: 8rpx;
+  font-size: 32rpx;
+  line-height: 1.22;
+  color: #161823;
+  letter-spacing: 0;
+}
+
+.hero-subtitle {
+  margin-top: 8rpx;
+  font-size: 21rpx;
+  line-height: 1.5;
+  color: #747d8c;
+}
+
+.hero-meta-row {
+  display: none;
+}
+
+.tab-bar {
+  height: 64rpx;
+  padding: 4rpx;
+  border-radius: 18rpx;
+  box-shadow: none;
+}
+
+.tab-item {
+  height: 56rpx;
+  border-radius: 14rpx;
+}
+
+.tab-label {
+  font-size: 22rpx;
+}
+
+.timeline-panel {
+  margin: 8rpx 20rpx 14rpx;
+  padding: 14rpx 0 10rpx;
+  border-radius: 18rpx;
+}
+
+.timeline-tip {
+  display: none;
+}
+
+.timeline-session {
+  width: 156rpx;
+}
+
+.timeline-card {
+  min-height: 104rpx;
+  padding: 12rpx;
+}
+
+.activity-group {
+  padding: 18rpx 16rpx;
+  border-radius: 20rpx;
+  box-shadow: none;
+}
+
+.group-cover {
+  width: 112rpx;
+  height: 112rpx;
+  border-radius: 14rpx;
+}
+
+.group-title {
+  font-size: 26rpx;
+  line-height: 1.32;
+}
+
+.group-desc {
+  display: none;
+}
+
+.group-time,
+.group-meta {
+  font-size: 19rpx;
+  line-height: 1.45;
+}
+
+.product-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14rpx;
+}
+
+.seckill-item {
+  min-width: 0;
+  border-radius: 18rpx;
+  box-shadow: none;
+}
+
+.seckill-image {
+  height: auto;
+  aspect-ratio: 1 / 1;
+}
+
+.seckill-content {
+  min-height: 208rpx;
+  padding: 14rpx 12rpx;
+}
+
+.seckill-title {
+  min-height: 62rpx;
+  font-size: 22rpx;
+  line-height: 1.38;
+}
+
+.seckill-info-line,
+.seckill-countdown,
+.seckill-sold,
+.seckill-price-origin {
+  font-size: 17rpx;
+}
+
+.seckill-status-badge {
+  height: 32rpx;
+  padding: 0 10rpx;
+  font-size: 16rpx;
+}
+
+.seckill-price-now {
+  font-size: 30rpx;
+  color: #007AFF;
+}
+
+.seckill-action {
+  height: 36rpx;
+  padding: 0 10rpx;
+  font-size: 16rpx;
+}
+
+/* Final product-card override: this must stay at the end of the file. */
+.product-list {
+  margin-top: 22rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 18rpx;
+}
+
+.seckill-item {
+  display: grid;
+  grid-template-columns: 188rpx minmax(0, 1fr);
+  gap: 18rpx;
+  min-height: 214rpx;
+  padding: 16rpx;
+  border-radius: 24rpx;
+  background: #ffffff;
+  border: 1rpx solid rgba(22, 24, 35, 0.08);
+  box-shadow: 0 10rpx 24rpx rgba(22, 24, 35, 0.05);
+  overflow: hidden;
+}

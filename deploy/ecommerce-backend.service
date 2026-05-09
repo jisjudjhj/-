@@ -1,0 +1,33 @@
+[Unit]
+Description=Ecommerce Backend Service
+After=network-online.target docker.service
+Wants=network-online.target
+Requires=docker.service
+StartLimitIntervalSec=15min
+StartLimitBurst=3
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ecommerce/backend
+EnvironmentFile=-/opt/ecommerce/backend/server.env
+Environment=SERVER_ADDRESS=0.0.0.0
+Environment=SERVER_PORT=8080
+Environment=DB_URL=jdbc:mysql://127.0.0.1:3306/ecommerce_recommend?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+Environment=REDIS_HOST=127.0.0.1
+Environment=REDIS_PORT=6379
+Environment=MQ_ENABLED=false
+Environment=RABBITMQ_HOST=127.0.0.1
+Environment=RABBITMQ_PORT=5672
+Environment=STREAM_REALTIME_ENABLED=true
+Environment=STREAM_KAFKA_ENABLED=false
+Environment=LOCAL_BASE_URL=http://127.0.0.1:8080/uploads
+Environment=JAVA_TOOL_OPTIONS=-XX:+ExitOnOutOfMemoryError
+ExecStart=/usr/bin/java -Xms256m -Xmx768m -jar /opt/ecommerce/backend/app.jar
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=30
+TimeoutStartSec=180
+User=root
+
+[Install]
+WantedBy=multi-user.target

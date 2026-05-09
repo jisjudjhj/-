@@ -1,0 +1,166 @@
+<view class="container">
+  <custom-nav-bar title="智能购物助手" color="#111111" showBack="{{true}}"></custom-nav-bar>
+
+  <scroll-view
+    class="chat-scroll"
+    scroll-y
+    scroll-into-view="{{scrollTarget}}"
+    scroll-with-animation
+    enhanced
+    show-scrollbar="{{false}}"
+  >
+    <view class="welcome-card" wx:if="{{messages.length === 0}}">
+      <view class="welcome-topline">
+        <text class="welcome-kicker">智能购物助手</text>
+        <text class="welcome-status">实时导购</text>
+      </view>
+      <view class="welcome-icon">智</view>
+      <view class="welcome-title">你好，我是你的智能导购</view>
+      <view class="quick-section">
+        <view class="quick-title">试着这样问</view>
+        <view class="quick-tags">
+          <view class="quick-tag" wx:for="{{welcomePrompts}}" wx:key="*this" bindtap="sendQuickMessage" data-msg="{{item}}">
+            {{item}}
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="snapshot-panel" wx:if="{{shoppingSnapshot.summary || shoppingSnapshot.personaSummary || shoppingSnapshot.strategyLabel || shoppingSnapshot.insightCards.length}}">
+      <view class="snapshot-head">
+        <view class="snapshot-label">
+          <text class="snapshot-title">今日购物情境</text>
+          <text class="snapshot-sub">{{shoppingSnapshot.personaTitle || '实时购物画像'}}</text>
+        </view>
+        <view class="snapshot-chip" wx:if="{{shoppingSnapshot.strategyLabel}}">{{shoppingSnapshot.strategyLabel}}</view>
+      </view>
+      <view class="snapshot-brief" wx:if="{{shoppingSnapshot.personaSummary}}">
+        <text>{{shoppingSnapshot.personaSummary}}</text>
+      </view>
+      <view class="snapshot-details" wx:if="{{shoppingSnapshot.details.length}}">
+        <view class="snapshot-detail" wx:for="{{shoppingSnapshot.details}}" wx:key="title" wx:if="{{snapshotExpanded || index < 1}}">
+          <text class="snapshot-detail-title">{{item.title}}</text>
+          <text class="snapshot-detail-value">{{item.value}}</text>
+        </view>
+      </view>
+      <view class="snapshot-brief" wx:if="{{shoppingSnapshot.summary}}">
+        <text>{{shoppingSnapshot.summary}}</text>
+      </view>
+      <view class="insight-grid" wx:if="{{shoppingSnapshot.insightCards.length}}">
+        <view class="insight-card" wx:for="{{shoppingSnapshot.insightCards}}" wx:key="title" wx:if="{{snapshotExpanded || index < 1}}">
+          <text class="insight-title">{{item.title}}</text>
+          <text class="insight-value">{{item.value}}</text>
+          <text class="insight-detail">{{item.detail}}</text>
+        </view>
+      </view>
+      <view
+        class="snapshot-toggle"
+        wx:if="{{shoppingSnapshot.details.length > 1 || shoppingSnapshot.insightCards.length > 1}}"
+        bindtap="toggleSnapshotExpand"
+      >
+        {{snapshotExpanded ? '收起次要信息' : '展开更多重点'}}
+      </view>
+      <view class="actions-row" wx:if="{{shoppingSnapshot.nextActions.length}}">
+        <view class="action-chip" wx:for="{{shoppingSnapshot.nextActions}}" wx:key="label" bindtap="sendQuickMessage" data-msg="{{item.prompt || item.label}}">
+          {{item.label}}
+        </view>
+      </view>
+    </view>
+
+    <view class="message-list">
+      <block wx:for="{{messages}}" wx:key="id">
+        <view class="message-row user-row" wx:if="{{item.role === 'user'}}" id="msg-{{item.id}}">
+          <view class="msg-bubble user-bubble">
+            <text>{{item.content}}</text>
+          </view>
+        </view>
+
+        <view class="message-row ai-row" wx:elif="{{item.role === 'assistant'}}" id="msg-{{item.id}}">
+          <view class="ai-avatar">智</view>
+          <view class="ai-content">
+            <view class="focus-points" wx:if="{{item.focusPoints && item.focusPoints.length > 0}}">
+              <view class="focus-point" wx:for="{{item.focusPoints}}" wx:key="*this">{{item}}</view>
+            </view>
+            <view class="msg-bubble ai-bubble">
+              <text>{{item.collapsed ? item.contentShort : item.content}}</text>
+            </view>
+            <view class="expand-toggle" wx:if="{{item.hasMore}}" bindtap="toggleMessageExpand" data-id="{{item.id}}">
+              {{item.collapsed ? '展开全文' : '收起全文'}}
+            </view>
+
+            <view class="strategy-pill" wx:if="{{item.strategyLabel}}">
+              {{item.strategyLabel}}
+            </view>
+
+            <view class="intent-tags" wx:if="{{item.intentTags && item.intentTags.length > 0}}">
+              <view class="intent-tag" wx:for="{{item.intentTags}}" wx:key="*this">{{item}}</view>
+            </view>
+
+            <view class="product-cards" wx:if="{{item.products && item.products.length > 0}}">
+              <view class="product-item-wrap" wx:for="{{item.products}}" wx:for-item="p" wx:key="id">
+                <product-card
+                  product="{{p}}"
+                  showReason="{{true}}"
+                  showSales="{{false}}"
+                  showAddCart="{{false}}"
+                  showDislike="{{false}}"
+                  bind:click="goToProduct"
+                ></product-card>
+              </view>
+            </view>
+
+            <view class="prompt-card" wx:if="{{item.suggestedPrompts && item.suggestedPrompts.length > 0}}">
+            <view class="prompt-title">继续问</view>
+              <view class="prompt-actions">
+              <view class="prompt-chip" wx:for="{{item.suggestedPrompts}}" wx:key="*this" wx:if="{{index < 3}}" bindtap="sendQuickMessage" data-msg="{{item}}">
+                {{item}}
+              </view>
+            </view>
+          </view>
+
+            <view class="clarify-card" wx:if="{{item.needClarification && ((item.clarificationQuestion && item.clarificationQuestion.length > 0) || (item.followUpSuggestions && item.followUpSuggestions.length > 0))}}">
+              <view class="clarify-title">补充条件更准</view>
+              <view class="clarify-desc" wx:if="{{item.clarificationQuestion && item.clarificationQuestion.length > 0}}">{{item.clarificationQuestion}}</view>
+              <view class="clarify-actions" wx:if="{{item.followUpSuggestions && item.followUpSuggestions.length > 0}}">
+                <view class="clarify-chip" wx:for="{{item.followUpSuggestions}}" wx:key="*this" wx:if="{{index < 3}}" bindtap="sendQuickMessage" data-msg="{{item}}">
+                  {{item}}
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+
+      <view class="message-row ai-row" wx:if="{{loading}}" id="msg-loading">
+        <view class="ai-avatar">智</view>
+        <view class="msg-bubble ai-bubble loading-bubble">
+          <view class="typing-dots">
+            <view class="typing-dot"></view>
+            <view class="typing-dot"></view>
+            <view class="typing-dot"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="scroll-spacer"></view>
+  </scroll-view>
+
+  <view class="input-bar-wrap">
+    <view class="input-bar">
+      <input
+        class="input-field"
+        placeholder="说说预算、用途或想买什么"
+        value="{{inputValue}}"
+        bindinput="onInput"
+        bindconfirm="sendMessage"
+        confirm-type="send"
+        disabled="{{loading}}"
+      />
+      <view class="send-btn {{inputValue && !loading ? 'send-btn-active' : ''}}" bindtap="sendMessage">
+        <view class="send-icon"></view>
+      </view>
+    </view>
+  </view>
+</view>
+

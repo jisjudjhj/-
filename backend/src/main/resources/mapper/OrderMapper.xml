@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.OrderMapper">
+
+    <select id="selectTotalRevenue" resultType="java.math.BigDecimal">
+        SELECT IFNULL(SUM(total_amount), 0) FROM `order` WHERE status IN (1, 2, 3)
+    </select>
+
+    <select id="selectRecentStats" resultType="java.util.Map">
+        SELECT recent.`date`,
+               recent.`count`,
+               recent.amount
+        FROM (
+            SELECT DATE(create_time) AS `date`,
+                   COUNT(*) AS `count`,
+                   IFNULL(SUM(total_amount), 0) AS amount
+            FROM `order`
+            GROUP BY DATE(create_time)
+            ORDER BY `date` DESC
+            LIMIT 7
+        ) recent
+        ORDER BY recent.`date`
+    </select>
+
+    <update id="casUpdateStatus">
+        UPDATE `order` SET status = #{newStatus}
+        WHERE id = #{id} AND status = #{oldStatus}
+    </update>
+
+    <select id="selectTimeoutPendingOrders" resultType="com.ecommerce.entity.Order">
+        SELECT * FROM `order`
+        WHERE status = 0
+          AND create_time &lt; DATE_SUB(NOW(), INTERVAL #{minutes} MINUTE)
+    </select>
+
+    <select id="selectUserSeckillPurchasedQuantity" resultType="java.lang.Integer">
+        SELECT IFNULL(SUM(oi.quantity), 0)
+        FROM `order` o
+        JOIN order_item oi ON oi.order_id = o.id
+        WHERE o.user_id = #{userId}
+          AND o.seckill_apply_id = #{applyId}
+          AND o.status IN (0, 1, 2, 3)
+    </select>
+
+    <select id="selectMerchantOrderPage" resultType="com.ecommerce.entity.Order">
+        SELECT o.*
+        FROM `order` o
+        WHERE EXISTS (
+            SELECT 1
+            FROM order_item oi
+            INNER JOIN product p ON p.id = oi.product_id
+            WHERE oi.order_id = o.id
+              AND p.merchant_id = #{merchantId}
+              AND p.deleted = 0
+        )
+        AND NOT EXISTS (
+            SELECT 1
+            FROM order_item oi
+            LEFT JOIN product p ON p.id = oi.product_id
+            WHERE oi.order_id = o.id
+              AND (p.id IS NULL OR p.merchant_id != #{merchantId} OR p.deleted != 0)
+        )
+        <if test="status != null and status &gt;= 0">
+            AND o.status = #{status}
+        </if>
+        ORDER BY o.create_time DESC, o.id DESC
+    </select>
+
+</mapper>

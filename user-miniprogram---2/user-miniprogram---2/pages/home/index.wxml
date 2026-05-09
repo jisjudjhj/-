@@ -1,0 +1,340 @@
+<view class="home-page bg-gradient-primary">
+  <custom-nav-bar title="数智优购" color="{{navColor}}" transparentTitle="{{!isScrolled}}" isScrolled="{{isScrolled}}" showBack="{{false}}">
+    <view slot="right" class="home-message-btn glass-card-soft active-opacity" bindtap="goToMessages">
+      <view class="home-message-icon"></view>
+      <view class="home-message-badge badge-rose" wx:if="{{unreadMessageCount > 0}}" style="position: absolute; top: -8rpx; right: -8rpx; min-width: 32rpx; height: 32rpx; padding: 0 8rpx; font-size: 18rpx;">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</view>
+    </view>
+  </custom-nav-bar>
+
+  <view class="hero-stage glass-card" style="position: relative;">
+    <view class="glass-overlay-top"></view>
+    <swiper class="hero-swiper" autoplay circular interval="5000" duration="900" bindchange="onSwiperChange">
+      <swiper-item wx:for="{{banners}}" wx:key="id">
+        <view class="hero-slide" bindtap="goToBanner" data-index="{{index}}">
+          <image class="hero-image {{currentBanner === index ? 'ken-burns' : ''}}" src="{{item.image}}" mode="aspectFill"></image>
+          <view class="hero-shade"></view>
+          <view class="hero-copy">
+            <view class="badge-rose" style="margin-bottom: 16rpx;">
+              <view class="badge-dot"></view>
+              <text>精选会场</text>
+            </view>
+            <text class="hero-title text-ellipsis">{{item.title || '今晚值得入手的好物'}}</text>
+            <text class="hero-subtitle">智营云商 · 推荐、交易、归因一体化</text>
+            <view class="hero-action btn-primary-gradient">开始挑选</view>
+          </view>
+        </view>
+      </swiper-item>
+    </swiper>
+    <view class="hero-dots" wx:if="{{banners.length > 1}}">
+      <view class="hero-dot {{currentBanner === index ? 'hero-dot-active' : ''}}" wx:for="{{banners}}" wx:key="id"></view>
+    </view>
+  </view>
+
+  <view class="home-body">
+    <view class="zone zone-inspiration">
+      <view class="zone-head">
+        <view class="zone-head-title-wrap">
+          <text class="zone-title">河南灵感</text>
+        </view>
+        <view class="zone-more active-opacity" bindtap="goToExplore">全部探索<view class="arrow-right-small"></view></view>
+      </view>
+      <scroll-view class="inspiration-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+        <view class="inspiration-list">
+          <view class="inspiration-item {{item.toneClass || ''}} active-opacity" wx:for="{{inspirations}}" wx:key="id" bindtap="goToInspiration" data-index="{{index}}">
+            <view class="inspiration-icon">
+              <view class="inspiration-glyph {{item.iconClass || 'icon-default'}}"></view>
+            </view>
+            <text class="inspiration-text">{{item.title}}</text>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="zone zone-seckill" wx:if="{{belowFoldReady}}">
+      <view class="zone-head">
+        <view class="zone-head-title-wrap">
+          <text class="zone-title">限时秒杀</text>
+          <text class="zone-tag-hot">热卖</text>
+        </view>
+        <view class="zone-side">
+          <text class="zone-count" wx:if="{{seckillProducts.length}}">{{seckillProducts.length}} 件</text>
+          <view class="zone-more active-opacity" bindtap="goToSeckillHall">会场<view class="arrow-right-small"></view></view>
+        </view>
+      </view>
+
+      <view class="section-empty" wx:if="{{!seckillLoading && !seckillProducts.length}}">
+        <text class="section-empty-text">暂无秒杀</text>
+      </view>
+
+      <scroll-view class="seckill-scroll" scroll-x enable-flex show-scrollbar="{{false}}" scroll-with-animation wx:else>
+        <view class="seckill-list">
+          <view class="seckill-item active-opacity" wx:for="{{seckillProducts}}" wx:key="id" bindtap="goToSeckillProduct" data-id="{{item.id}}">
+            <image wx:if="{{item.image}}" class="seckill-image" src="{{item.image}}" mode="aspectFill" binderror="handleSeckillImageError" data-index="{{index}}"></image>
+            <view wx:else class="seckill-image image-placeholder">
+              <text class="image-placeholder-text">暂无图片</text>
+            </view>
+            <view class="seckill-shade"></view>
+            <view class="seckill-content">
+              <text class="seckill-title text-ellipsis-2">{{item.title}}</text>
+              <view class="seckill-meta">
+                <text class="seckill-status-badge {{item.seckillStatus === 1 ? 'active' : (item.seckillStatus === 0 ? 'pending' : 'ended')}}">{{item.seckillStatusLabel}}</text>
+                <text class="seckill-countdown">{{item.countdownText}}</text>
+              </view>
+              <view class="seckill-price-row">
+                <text class="seckill-price-now"><text class="seckill-price-symbol">¥</text>{{item.seckillPrice}}</text>
+                <text class="seckill-price-origin">¥{{item.originalPrice}}</text>
+              </view>
+              <view class="seckill-foot">
+                <text class="seckill-sold">{{item.soldText}}</text>
+                <view class="seckill-action {{item.seckillStatus === 1 ? 'active' : ''}}">
+                  {{item.seckillStatus === 1 ? '马上抢' : (item.seckillStatus === 0 ? '即将开抢' : '已结束')}}
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </view>
+
+    <view class="zone zone-stream-hot" wx:if="{{belowFoldReady}}">
+      <view class="zone-head">
+        <view class="zone-head-title-wrap">
+          <text class="zone-title">实时热榜</text>
+          <text class="zone-chip">实时</text>
+        </view>
+        <view class="zone-side">
+          <text class="zone-count" wx:if="{{realtimeHotProducts.length}}">{{realtimeHotProducts.length}} 件</text>
+        </view>
+      </view>
+
+      <view class="stream-hot-tabs">
+        <view
+          class="stream-hot-tab {{realtimeHotWindow === item.value ? 'is-active' : ''}}"
+          wx:for="{{[{label:'1分钟',value:'1m'},{label:'1小时',value:'1h'},{label:'1天',value:'1d'}]}}"
+          wx:key="value"
+          data-window="{{item.value}}"
+          bindtap="switchRealtimeHotWindow"
+        >
+          {{item.label}}
+        </view>
+      </view>
+
+      <view class="section-empty" wx:if="{{!realtimeHotLoading && !realtimeHotProducts.length}}">
+        <text class="section-empty-text">暂无热榜</text>
+      </view>
+
+      <scroll-view class="stream-hot-scroll" scroll-x enable-flex show-scrollbar="{{false}}" scroll-with-animation wx:else>
+        <view class="stream-hot-list">
+          <view
+            class="stream-hot-item stream-hot-item-shell {{item.toneClass}} active-opacity"
+            wx:for="{{realtimeHotProducts}}"
+            wx:key="id"
+            bindtap="goToRealtimeHotProduct"
+            data-id="{{item.id}}"
+          >
+            <view class="stream-hot-item-media">
+              <image class="stream-hot-item-image" src="{{item.image}}" mode="aspectFill"></image>
+              <view class="stream-hot-item-topline">
+                <view class="stream-hot-item-rank">热榜 #{{item.rank}}</view>
+                <view class="stream-hot-item-category text-ellipsis">{{item.categoryLabel}}</view>
+              </view>
+            </view>
+            <view class="stream-hot-item-body">
+              <view class="stream-hot-item-title text-ellipsis-2">{{item.title}}</view>
+              <view class="stream-hot-item-meta">
+                <text class="stream-hot-item-price">{{item.priceText}}</text>
+                <text class="stream-hot-item-sales">销量 {{item.salesText}}</text>
+              </view>
+              <view class="stream-hot-item-score-pill" wx:if="{{item.scoreText}}">
+                <text class="stream-hot-item-score-label">热度</text>
+                <text class="stream-hot-item-score-value">{{item.scoreText}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="stream-hot-update" wx:if="{{realtimeHotLastUpdate}}">
+        {{realtimeHotLastUpdate}}
+      </view>
+    </view>
+
+    <view class="feed-zone card-elevated-strong" style="position: relative;">
+      <view class="zone-head">
+        <view class="zone-head-title-wrap">
+          <text class="text-heading">{{recommendTitle}}</text>
+          <view class="badge-rose">
+            <view class="badge-dot"></view>
+            <text style="font-size: 18rpx;">{{recommendAlgorithmBadge}}</text>
+          </view>
+        </view>
+        <view class="zone-side">
+          <view class="zone-refresh-btn glass-card-soft active-opacity" bindtap="onRecommendRefreshTap">换一组</view>
+          <text class="zone-count" wx:if="{{products.length}}" style="color: var(--text-tertiary); font-size: 22rpx;">{{products.length}} 件</text>
+        </view>
+      </view>
+
+      <view class="algorithm-panel">
+        <scroll-view class="algorithm-tabs-scroll" scroll-x enable-flex show-scrollbar="{{false}}">
+          <view class="algorithm-tabs">
+            <view
+              class="algorithm-tab {{activeRecommendAlgorithm === item.key ? 'is-active' : ''}} active-opacity"
+              wx:for="{{recommendAlgorithmTabs}}"
+              wx:key="key"
+              data-key="{{item.key}}"
+              bindtap="switchRecommendAlgorithm"
+            >
+              <text class="algorithm-tab-main">{{item.label}}</text>
+              <text class="algorithm-tab-badge">{{item.badge}}</text>
+            </view>
+          </view>
+        </scroll-view>
+        <view class="algorithm-explain">
+          <text class="algorithm-explain-tag">{{recommendExplainTag}}</text>
+          <text class="algorithm-explain-text">{{recommendExplain}}</text>
+        </view>
+      </view>
+
+      <view class="feed-grid">
+        <block wx:if="{{loading && products.length === 0}}">
+          <view class="feed-item-wrap" wx:for="{{4}}" wx:key="*this">
+            <product-card skeleton="{{true}}" showReason="{{true}}" showAddCart="{{true}}"></product-card>
+          </view>
+        </block>
+        <block wx:else>
+          <view class="feed-item-wrap" wx:for="{{products}}" wx:key="id">
+            <product-card
+              product="{{item}}"
+              className="glass-card-soft {{item.visualClass || ''}}"
+              showReason="{{true}}"
+              enableLongPressMenu="{{true}}"
+              longPressDuration="{{1500}}"
+              showAddCart="{{true}}"
+              actionMode="{{item.isSeckillDirectBuy ? 'seckill' : 'cart'}}"
+              showSales="{{true}}"
+              showDislike="{{false}}"
+              bind:click="goToDetail"
+              bind:addcart="addToCart"
+              bind:explain="openRecommendationEvidence"
+              bind:longpressmenu="onRecommendLongPressMenu"
+            ></product-card>
+          </view>
+        </block>
+      </view>
+
+      <view class="load-more-wrap" wx:if="{{!loading && products.length}}">
+        <view class="loading-more" wx:if="{{loadingMore}}">
+          <view class="loading-dot-anim"></view>
+          <text class="loading-more-text">加载中</text>
+        </view>
+        <view class="no-more" wx:elif="{{!hasMore}}">
+          <text class="no-more-text">没有更多</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="feed-zone latest-zone" wx:if="{{belowFoldReady}}">
+      <view class="zone-head">
+        <view class="zone-head-title-wrap">
+          <text class="zone-title">最新商品</text>
+          <text class="zone-chip">上新</text>
+        </view>
+        <text class="zone-count" wx:if="{{latestProducts.length}}">{{latestProducts.length}} 件</text>
+      </view>
+
+      <view class="section-empty" wx:if="{{!latestLoading && !latestProducts.length}}">
+        <text class="section-empty-text">暂无最新商品</text>
+      </view>
+
+      <view class="feed-grid" wx:else>
+        <view class="feed-item-wrap" wx:for="{{latestProducts}}" wx:key="id">
+          <product-card
+            product="{{item}}"
+            className="{{item.visualClass || ''}}"
+            showReason="{{true}}"
+            showAddCart="{{true}}"
+            actionMode="{{item.isSeckillDirectBuy ? 'seckill' : 'cart'}}"
+            showSales="{{true}}"
+            bind:click="goToDetail"
+            bind:addcart="addToCart"
+            bind:explain="openRecommendationEvidence"
+          ></product-card>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="page-bottom-spacer page-bottom-spacer--home"></view>
+</view>
+
+<custom-popup show="{{showCouponPopup}}" position="center" round closeable bind:close="closeCouponPopup">
+  <view class="coupon-popup">
+    <view class="coupon-popup-head">
+      <text class="coupon-popup-badge">优惠提醒</text>
+      <view class="coupon-popup-icon"></view>
+    </view>
+    <view class="popup-title">先领券再下单</view>
+    <view class="popup-desc">
+      还有 <text class="popup-count">{{unclaimedCount}}</text> 张券，
+      现在领取会更划算。
+    </view>
+    <view class="coupon-popup-panel">
+      <view class="coupon-popup-stat">
+        <text class="coupon-popup-stat-value">{{unclaimedCount}}</text>
+        <text class="coupon-popup-stat-label">待领取</text>
+      </view>
+      <view class="coupon-popup-divider"></view>
+      <text class="coupon-popup-tip">可前往优惠券中心统一领取，并查看使用门槛</text>
+    </view>
+    <view class="popup-btn" bindtap="goToCouponsFromPopup">去领券</view>
+    <view class="popup-sub-desc">下单前先领，默认更省一点</view>
+  </view>
+</custom-popup>
+
+<custom-popup show="{{showInterestPopup}}" position="center" round closeable bind:close="closeInterestPopup">
+  <view class="interest-popup">
+    <view class="interest-title">选择你感兴趣的分类</view>
+    <view class="interest-subtitle">我们会据此生成更贴近你的推荐结果</view>
+    <view class="interest-grid">
+      <view
+        wx:for="{{interestCategories}}"
+        wx:key="id"
+        class="interest-item {{item.selected ? 'interest-selected' : ''}}"
+        bindtap="toggleInterest"
+        data-index="{{index}}"
+      >
+        <image class="interest-icon" src="{{item.icon}}" mode="aspectFill"></image>
+        <text class="interest-name">{{item.name}}</text>
+      </view>
+    </view>
+    <view class="interest-actions">
+      <view class="interest-skip" bindtap="closeInterestPopup">跳过</view>
+      <view class="interest-confirm {{selectedInterestCount > 0 && !interestSubmitting ? '' : 'disabled'}}" bindtap="confirmInterest">
+        {{interestSubmitting ? '保存中...' : '确认选择' + (selectedInterestCount > 0 ? '(' + selectedInterestCount + ')' : '')}}
+      </view>
+    </view>
+  </view>
+</custom-popup>
+
+<custom-popup show="{{showRecommendEvidence}}" position="bottom" round closeable bind:close="closeRecommendationEvidence">
+  <view class="recommend-evidence-sheet" wx:if="{{activeRecommendationEvidence}}">
+    <view class="evidence-kicker">推荐依据</view>
+    <view class="evidence-title text-ellipsis-2">{{activeRecommendationEvidence.title}}</view>
+    <view class="evidence-source-row">
+      <view class="evidence-source">{{activeRecommendationEvidence.sourceLabel}}</view>
+      <view class="evidence-token">Token {{activeRecommendationEvidence.tokenText}}</view>
+    </view>
+    <view class="evidence-reason">{{activeRecommendationEvidence.reason}}</view>
+    <view class="evidence-tags">
+      <view class="evidence-tag" wx:for="{{activeRecommendationEvidence.tags}}" wx:key="*this">{{item}}</view>
+    </view>
+    <view class="evidence-dim-grid">
+      <view class="evidence-dim" wx:for="{{activeRecommendationEvidence.dimensions}}" wx:key="label">
+        <text class="evidence-dim-label">{{item.label}}</text>
+        <text class="evidence-dim-value text-ellipsis">{{item.value}}</text>
+      </view>
+    </view>
+  </view>
+</custom-popup>
+
+<cart-parabola id="cartParabola"></cart-parabola>

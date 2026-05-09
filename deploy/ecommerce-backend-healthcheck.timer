@@ -1,0 +1,12 @@
+[Unit]
+Description=Run ecommerce backend health check every minute
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=1min
+AccuracySec=15s
+Persistent=true
+Unit=ecommerce-backend-healthcheck.service
+
+[Install]
+WantedBy=timers.target

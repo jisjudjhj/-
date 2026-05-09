@@ -1,0 +1,25 @@
+{
+  "name": "mysql-cdc-product",
+  "config": {
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "database.hostname": "host.docker.internal",
+    "database.port": "3306",
+    "database.user": "root",
+    "database.password": "root",
+    "database.server.id": "5404",
+    "topic.prefix": "cdc",
+    "database.include.list": "ecommerce_recommend",
+    "table.include.list": "ecommerce_recommend.product",
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:29092",
+    "schema.history.internal.kafka.topic": "schema-changes.ecommerce.product",
+    "include.schema.changes": "false",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
+    "transforms": "route",
+    "transforms.route.type": "org.apache.kafka.connect.transforms.RegexRouter",
+    "transforms.route.regex": "cdc\\.ecommerce_recommend\\.product",
+    "transforms.route.replacement": "cdc.product"
+  }
+}

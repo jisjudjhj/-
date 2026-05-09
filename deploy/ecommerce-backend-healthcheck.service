@@ -1,0 +1,16 @@
+[Unit]
+Description=Ecommerce Backend Health Check
+After=network-online.target ecommerce-backend.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=SERVICE_NAME=ecommerce-backend.service
+Environment=CHECK_URL=http://127.0.0.1:8080/ws/info
+Environment=FAILURE_THRESHOLD=3
+Environment=RESTART_COOLDOWN_SEC=1800
+Environment=RESTART_WINDOW_SEC=21600
+Environment=MAX_RESTARTS_WINDOW=2
+Environment=CURL_TIMEOUT_SEC=8
+ExecStart=/opt/ecommerce/scripts/ecommerce-backend-healthcheck.sh
+User=root

@@ -1,0 +1,72 @@
+<view class="container">
+<custom-nav-bar title="编辑资料" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <scroll-view class="edit-scroll" scroll-y>
+    <view class="hero-card">
+      <text class="hero-kicker">资料维护</text>
+      <text class="hero-title">维护头像与昵称信息</text>
+      <text class="hero-desc">提交后审核</text>
+    </view>
+
+    <view class="notice-card" wx:if="{{pendingRequest}}">
+      <view class="notice-icon"></view>
+      <view class="notice-copy">
+        <text class="notice-title" wx:if="{{pendingRequest.status === 0}}">审核中</text>
+        <text class="notice-title" wx:elif="{{pendingRequest.status === 2}}">上次修改未通过审核</text>
+        <text class="notice-desc" wx:if="{{pendingRequest.status === 0}}">请勿重复提交</text>
+        <text class="notice-desc" wx:elif="{{pendingRequest.status === 2}}">原因：{{pendingRequest.rejectReason}}</text>
+      </view>
+    </view>
+
+    <view class="notice-card cooldown" wx:if="{{!canModify && cooldownReason === '距上次修改不满7天'}}">
+      <view class="notice-copy">
+        <text class="notice-title">冷却中</text>
+        <text class="notice-desc">{{nextChangeDate}} 后可改</text>
+      </view>
+    </view>
+
+    <view class="panel-card" bindtap="chooseAvatar">
+      <view class="panel-head">
+        <text class="panel-title">头像</text>
+        <view class="arrow-right"></view>
+      </view>
+      <view class="avatar-row">
+        <view class="avatar-preview">
+          <image class="preview-avatar" wx:if="{{newAvatar || currentAvatar}}" src="{{newAvatar || currentAvatar}}" mode="aspectFill"></image>
+          <view class="preview-avatar placeholder" wx:else>
+            <view class="avatar-icon"></view>
+          </view>
+        </view>
+        <view class="avatar-copy">
+          <text class="avatar-title">点击选择新的头像</text>
+          <text class="avatar-desc">清晰头像</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="panel-card">
+      <view class="panel-head simple">
+        <text class="panel-title">昵称</text>
+      </view>
+      <input class="nickname-input" placeholder="请输入昵称" value="{{newNickname}}" bindinput="onNicknameInput" maxlength="12" />
+      <text class="field-tip">2-12 个字符</text>
+    </view>
+
+    <view class="rules-card">
+      <text class="rules-kicker">规则</text>
+      <text class="rules-title">修改规则</text>
+      <text class="rule-item">· 审核后生效</text>
+      <text class="rule-item">· 每次修改通过后需间隔 7 天才能再次修改</text>
+      <text class="rule-item">· 请避免使用违规内容或过度营销化信息</text>
+    </view>
+
+    <view style="height: 180rpx;"></view>
+  </scroll-view>
+
+  <view class="submit-wrap">
+    <custom-button type="primary" size="large" block disabled="{{!canModify || submitting || !hasChanges}}" bind:click="submitChange">
+      {{submitting ? '提交中...' : '提交修改'}}
+    </custom-button>
+  </view>
+</view>
+

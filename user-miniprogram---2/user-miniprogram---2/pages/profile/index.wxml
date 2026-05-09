@@ -1,0 +1,188 @@
+<view class="profile-page bg-gradient-primary">
+  <custom-nav-bar title="" showBack="{{false}}" color="#111827" placeholder="{{false}}" backgroundColor="transparent"></custom-nav-bar>
+
+  <scroll-view class="profile-scroll" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+    <view class="profile-content">
+      <view class="profile-hero glass-card active-opacity" bindtap="handleProfileHero" style="margin: 20rpx; padding: 40rpx; position: relative; border-radius: 36rpx;">
+        <view class="glass-overlay-top"></view>
+        <view class="hero-top">
+          <view class="avatar-wrap" style="position: relative;">
+            <image class="avatar" wx:if="{{userInfo && userInfo.avatarUrl}}" src="{{userInfo.avatarUrl}}" mode="aspectFill" style="width: 120rpx; height: 120rpx; border-radius: 60rpx; border: 4rpx solid rgba(255, 255, 255, 0.8); box-shadow: 0 18rpx 36rpx rgba(15, 23, 42, 0.12);"></image>
+            <view class="avatar-placeholder" wx:else style="width: 120rpx; height: 120rpx; border-radius: 60rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); display: flex; align-items: center; justify-content: center;">
+              <view class="avatar-icon" style="width: 60rpx; height: 60rpx; background: rgba(17, 24, 39, 0.2); border-radius: 50%;"></view>
+            </view>
+          </view>
+          <view class="user-detail" style="flex: 1; margin-left: 24rpx;">
+            <view class="nickname text-heading" style="font-size: 36rpx; margin-bottom: 12rpx;">{{userInfo ? (userInfo.nickName || '用户') : '点击登录'}}</view>
+          </view>
+        </view>
+
+        <view class="divider-gradient" style="margin: 32rpx 0;"></view>
+
+        <view class="hero-alerts" style="display: flex; gap: 16rpx;">
+          <view class="hero-alert-item glass-card-soft active-opacity {{profileAlertDetail.messageUnreadCount > 0 ? 'has-alert' : ''}}" bindtap="goToMessages" style="flex: 1; padding: 20rpx; border-radius: 24rpx; text-align: center;">
+            <text class="hero-alert-label text-description" style="display: block; font-size: 22rpx; margin-bottom: 8rpx;">消息</text>
+            <text class="hero-alert-value text-brand" style="display: block; font-size: 32rpx; color: {{profileAlertDetail.messageUnreadCount > 0 ? 'var(--accent-color)' : 'var(--text-primary)'}};">{{profileAlertDetail.messageUnreadCount > 99 ? '99+' : (profileAlertDetail.messageUnreadCount || 0)}}</text>
+          </view>
+          <view class="hero-alert-item glass-card-soft active-opacity {{profileAlertDetail.couponAlertCount > 0 ? 'has-alert' : ''}}" bindtap="goToCoupons" style="flex: 1; padding: 20rpx; border-radius: 24rpx; text-align: center;">
+            <text class="hero-alert-label text-description" style="display: block; font-size: 22rpx; margin-bottom: 8rpx;">券提醒</text>
+            <text class="hero-alert-value text-brand" style="display: block; font-size: 32rpx; color: {{profileAlertDetail.couponAlertCount > 0 ? 'var(--accent-color)' : 'var(--text-primary)'}};">{{profileAlertDetail.couponAlertCount > 99 ? '99+' : (profileAlertDetail.couponAlertCount || 0)}}</text>
+          </view>
+          <view class="hero-alert-item glass-card-soft active-opacity {{profileAlertDetail.aftersaleCount > 0 ? 'has-alert' : ''}}" bindtap="goToOrders" data-type="aftersale" style="flex: 1; padding: 20rpx; border-radius: 24rpx; text-align: center;">
+            <text class="hero-alert-label text-description" style="display: block; font-size: 22rpx; margin-bottom: 8rpx;">售后</text>
+            <text class="hero-alert-value text-brand" style="display: block; font-size: 32rpx; color: {{profileAlertDetail.aftersaleCount > 0 ? 'var(--accent-color)' : 'var(--text-primary)'}};">{{profileAlertDetail.aftersaleCount > 99 ? '99+' : (profileAlertDetail.aftersaleCount || 0)}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="wallet-card glass-card active-opacity" bindtap="goToWallet" wx:if="{{userInfo}}" style="margin: 20rpx; padding: 32rpx; border-radius: 36rpx; display: flex; align-items: center; justify-content: space-between; position: relative;">
+        <view class="glass-overlay-top"></view>
+        <view class="wallet-left" style="flex: 1;">
+          <view class="badge-rose" style="margin-bottom: 16rpx; display: inline-flex;">
+            <view class="badge-dot"></view>
+            <text>钱包余额</text>
+          </view>
+          <view class="wallet-balance text-brand" style="font-size: 56rpx; margin-bottom: 12rpx; color: var(--accent-color);">¥<number-ticker value="{{balance}}" decimals="2"></number-ticker></view>
+        </view>
+        <button class="wallet-btn btn-primary-gradient" style="width: 160rpx; height: 72rpx; border-radius: 999rpx; font-size: 26rpx; font-weight: 600;">去钱包</button>
+      </view>
+
+      <view class="user-stats-bar" style="display: flex; gap: 16rpx; margin: 0 20rpx 20rpx;">
+        <view class="stat-item card-elevated active-opacity" bindtap="goToFavorites" style="flex: 1; padding: 28rpx; border-radius: 28rpx; text-align: center;">
+          <view class="stat-num text-brand" style="font-size: 48rpx; margin-bottom: 8rpx;"><number-ticker value="{{stats.favorite}}"></number-ticker></view>
+          <view class="stat-label text-description" style="font-size: 24rpx;">收藏</view>
+        </view>
+        <view class="stat-item card-elevated active-opacity" bindtap="goToFootprint" style="flex: 1; padding: 28rpx; border-radius: 28rpx; text-align: center;">
+          <view class="stat-num text-brand" style="font-size: 48rpx; margin-bottom: 8rpx;"><number-ticker value="{{stats.footprint}}"></number-ticker></view>
+          <view class="stat-label text-description" style="font-size: 24rpx;">足迹</view>
+        </view>
+        <view class="stat-item card-elevated active-opacity" bindtap="goToCoupons" style="flex: 1; padding: 28rpx; border-radius: 28rpx; text-align: center;">
+          <view class="stat-num text-brand" style="font-size: 48rpx; margin-bottom: 8rpx;"><number-ticker value="{{stats.coupon}}"></number-ticker></view>
+          <view class="stat-label text-description" style="font-size: 24rpx;">可用券</view>
+        </view>
+      </view>
+
+      <view class="section order-section" style="margin: 0 20rpx 20rpx;">
+        <view class="section-header section-header-plain active-opacity" bindtap="goToOrders" data-type="all" style="margin-bottom: 16rpx;">
+          <text class="section-title text-heading" style="font-size: 30rpx;">订单中心</text>
+          <view class="section-more" style="display: flex; align-items: center; gap: 8rpx;">
+            <text class="text-description" style="font-size: 24rpx;">查看全部</text>
+            <text class="arrow-right"></text>
+          </view>
+        </view>
+        <view class="order-nav" style="padding: 8rpx 0 0;">
+          <view class="order-item active-opacity {{orderCount.unpaid > 0 ? 'has-badge' : ''}}" bindtap="goToOrders" data-type="unpaid" style="display: flex; flex-direction: column; align-items: center; gap: 12rpx; position: relative;">
+            <view class="order-icon icon-wallet" style="width: 56rpx; height: 56rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+            <text class="order-text text-description" style="font-size: 24rpx;">待付款</text>
+            <view class="badge badge-rose" wx:if="{{orderCount.unpaid > 0}}" style="position: absolute; top: -8rpx; right: -8rpx; min-width: 32rpx; height: 32rpx; padding: 0 8rpx; border-radius: 16rpx; display: flex; align-items: center; justify-content: center; font-size: 18rpx;">{{orderCount.unpaid > 99 ? '99+' : orderCount.unpaid}}</view>
+          </view>
+          <view class="order-item active-opacity {{orderCount.unshipped > 0 ? 'has-badge' : ''}}" bindtap="goToOrders" data-type="unshipped" style="display: flex; flex-direction: column; align-items: center; gap: 12rpx; position: relative;">
+            <view class="order-icon icon-box" style="width: 56rpx; height: 56rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+            <text class="order-text text-description" style="font-size: 24rpx;">待发货</text>
+            <view class="badge badge-rose" wx:if="{{orderCount.unshipped > 0}}" style="position: absolute; top: -8rpx; right: -8rpx; min-width: 32rpx; height: 32rpx; padding: 0 8rpx; border-radius: 16rpx; display: flex; align-items: center; justify-content: center; font-size: 18rpx;">{{orderCount.unshipped > 99 ? '99+' : orderCount.unshipped}}</view>
+          </view>
+          <view class="order-item active-opacity {{orderCount.unreceived > 0 ? 'has-badge' : ''}}" bindtap="goToOrders" data-type="unreceived" style="display: flex; flex-direction: column; align-items: center; gap: 12rpx; position: relative;">
+            <view class="order-icon icon-truck" style="width: 56rpx; height: 56rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+            <text class="order-text text-description" style="font-size: 24rpx;">待收货</text>
+            <view class="badge badge-rose" wx:if="{{orderCount.unreceived > 0}}" style="position: absolute; top: -8rpx; right: -8rpx; min-width: 32rpx; height: 32rpx; padding: 0 8rpx; border-radius: 16rpx; display: flex; align-items: center; justify-content: center; font-size: 18rpx;">{{orderCount.unreceived > 99 ? '99+' : orderCount.unreceived}}</view>
+          </view>
+          <view class="order-item active-opacity {{orderCount.aftersale > 0 ? 'has-badge' : ''}}" bindtap="goToOrders" data-type="aftersale" style="display: flex; flex-direction: column; align-items: center; gap: 12rpx; position: relative;">
+            <view class="order-icon icon-service" style="width: 56rpx; height: 56rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+            <text class="order-text text-description" style="font-size: 24rpx;">售后</text>
+            <view class="badge badge-rose" wx:if="{{orderCount.aftersale > 0}}" style="position: absolute; top: -8rpx; right: -8rpx; min-width: 32rpx; height: 32rpx; padding: 0 8rpx; border-radius: 16rpx; display: flex; align-items: center; justify-content: center; font-size: 18rpx;">{{orderCount.aftersale > 99 ? '99+' : orderCount.aftersale}}</view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section service-section" style="margin: 0 20rpx 20rpx;">
+        <view class="service-headline" style="margin-bottom: 16rpx;">
+          <text class="section-title text-heading" style="display: block; font-size: 30rpx; margin-bottom: 12rpx;">账户与服务</text>
+        </view>
+
+        <view class="service-list" style="padding: 8rpx 0 0;">
+          <view class="service-item active-opacity" bindtap="goToAiAssistant" style="display: flex; align-items: center; justify-content: space-between; padding: 24rpx 16rpx; border-bottom: 1rpx solid rgba(17, 24, 39, 0.06);">
+            <view class="service-left" style="display: flex; align-items: center; gap: 20rpx;">
+              <view class="service-icon icon-ai" style="width: 48rpx; height: 48rpx; background: linear-gradient(135deg, #007AFF, #007AFF); border-radius: 50%;"></view>
+              <text class="service-name text-heading" style="font-size: 28rpx;">智能购物助手</text>
+            </view>
+            <view class="service-right-info" style="display: flex; align-items: center; gap: 12rpx;">
+              <view class="arrow-right"></view>
+            </view>
+          </view>
+
+          <view class="service-item active-opacity" bindtap="goToMessages" style="display: flex; align-items: center; justify-content: space-between; padding: 24rpx 16rpx; border-bottom: 1rpx solid rgba(17, 24, 39, 0.06);">
+            <view class="service-left" style="display: flex; align-items: center; gap: 20rpx;">
+              <view class="service-icon icon-message" style="width: 48rpx; height: 48rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+              <text class="service-name text-heading" style="font-size: 28rpx;">消息通知</text>
+            </view>
+            <view class="service-right-info {{unreadMessageCount > 0 || profileAlertDetail.messageUnreadCount > 0 ? 'has-badge' : ''}}" style="display: flex; align-items: center; gap: 12rpx;">
+              <text class="service-count-badge badge-rose" wx:if="{{unreadMessageCount > 0}}" style="font-size: 20rpx;">{{unreadMessageCount > 99 ? '99+' : unreadMessageCount}}</text>
+              <view class="service-dot" wx:elif="{{profileAlertDetail.messageUnreadCount > 0}}" style="width: 12rpx; height: 12rpx; background: var(--accent-color); border-radius: 50%;"></view>
+              <view class="arrow-right"></view>
+            </view>
+          </view>
+
+          <view class="service-item active-opacity" bindtap="goToCustomerService" style="display: flex; align-items: center; justify-content: space-between; padding: 24rpx 16rpx; border-bottom: 1rpx solid rgba(17, 24, 39, 0.06);">
+            <view class="service-left" style="display: flex; align-items: center; gap: 20rpx;">
+              <view class="service-icon icon-customer-service" style="width: 48rpx; height: 48rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+              <text class="service-name text-heading" style="font-size: 28rpx;">在线客服</text>
+            </view>
+            <view class="service-right-info {{customerServiceUnreadCount > 0 ? 'has-badge' : ''}}" style="display: flex; align-items: center; gap: 12rpx;">
+              <text class="service-count-badge badge-rose" wx:if="{{customerServiceUnreadCount > 0}}" style="font-size: 20rpx;">{{customerServiceUnreadCount > 99 ? '99+' : customerServiceUnreadCount}}</text>
+              <view class="arrow-right"></view>
+            </view>
+          </view>
+
+          <view class="service-item active-opacity" bindtap="goToCoupons" style="display: flex; align-items: center; justify-content: space-between; padding: 24rpx 16rpx; border-bottom: 1rpx solid rgba(17, 24, 39, 0.06);">
+            <view class="service-left" style="display: flex; align-items: center; gap: 20rpx;">
+              <view class="service-icon icon-coupon" style="width: 48rpx; height: 48rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+              <text class="service-name text-heading" style="font-size: 28rpx;">优惠券</text>
+            </view>
+            <view class="service-right-info {{profileAlertDetail.couponUnclaimedCount > 0 || profileAlertDetail.couponAlertCount > 0 ? 'has-badge' : ''}}" style="display: flex; align-items: center; gap: 12rpx;">
+              <text class="service-badge text-description" wx:if="{{stats.coupon > 0}}" style="font-size: 22rpx;">{{stats.coupon}}张可用</text>
+              <text class="service-count-badge badge-rose" wx:if="{{profileAlertDetail.couponAlertCount > 0}}" style="font-size: 20rpx;">{{profileAlertDetail.couponAlertCount > 99 ? '99+' : profileAlertDetail.couponAlertCount}}</text>
+              <view class="arrow-right"></view>
+            </view>
+          </view>
+
+          <view class="service-item active-opacity" bindtap="goToOrders" data-type="aftersale" style="display: flex; align-items: center; justify-content: space-between; padding: 24rpx 16rpx; border-bottom: 1rpx solid rgba(17, 24, 39, 0.06);">
+            <view class="service-left" style="display: flex; align-items: center; gap: 20rpx;">
+              <view class="service-icon icon-headset" style="width: 48rpx; height: 48rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+              <text class="service-name text-heading" style="font-size: 28rpx;">售后进度</text>
+            </view>
+            <view class="service-right-info {{profileAlertDetail.aftersaleCount > 0 ? 'has-badge' : ''}}">
+              <text class="service-count-badge badge-rose" wx:if="{{profileAlertDetail.aftersaleCount > 0}}" style="font-size: 20rpx;">{{profileAlertDetail.aftersaleCount > 99 ? '99+' : profileAlertDetail.aftersaleCount}}</text>
+              <view class="arrow-right"></view>
+            </view>
+          </view>
+
+          <view class="service-item active-opacity" bindtap="goToAddress" style="display: flex; align-items: center; justify-content: space-between; padding: 24rpx 16rpx; border-bottom: 1rpx solid rgba(17, 24, 39, 0.06);">
+            <view class="service-left" style="display: flex; align-items: center; gap: 20rpx;">
+              <view class="service-icon icon-location" style="width: 48rpx; height: 48rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+              <text class="service-name text-heading" style="font-size: 28rpx;">地址管理</text>
+            </view>
+            <view class="arrow-right"></view>
+          </view>
+
+          <view class="service-item active-opacity" bindtap="goToAbout" style="display: flex; align-items: center; justify-content: space-between; padding: 24rpx 16rpx; border-bottom: 1rpx solid rgba(17, 24, 39, 0.06);">
+            <view class="service-left" style="display: flex; align-items: center; gap: 20rpx;">
+              <view class="service-icon icon-info" style="width: 48rpx; height: 48rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+              <text class="service-name text-heading" style="font-size: 28rpx;">关于我们</text>
+            </view>
+            <view class="arrow-right"></view>
+          </view>
+
+          <view class="service-item active-opacity" bindtap="goToSettings" style="display: flex; align-items: center; justify-content: space-between; padding: 24rpx 16rpx;">
+            <view class="service-left" style="display: flex; align-items: center; gap: 20rpx;">
+              <view class="service-icon icon-setting" style="width: 48rpx; height: 48rpx; background: linear-gradient(135deg, rgba(0, 122, 255, 0.1), rgba(17, 24, 39, 0.1)); border-radius: 50%;"></view>
+              <text class="service-name text-heading" style="font-size: 28rpx;">设置</text>
+            </view>
+            <view class="arrow-right"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view style="height: 210rpx;"></view>
+  </scroll-view>
+</view>

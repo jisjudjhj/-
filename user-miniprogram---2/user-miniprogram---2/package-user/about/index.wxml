@@ -1,0 +1,39 @@
+<view class="container">
+<custom-nav-bar title="关于数智优购" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <scroll-view class="about-scroll" scroll-y>
+    <view class="hero-card">
+      <view class="logo-wrap">
+        <text class="logo-text">优</text>
+      </view>
+      <text class="hero-title">数智优购</text>
+      <text class="hero-version">版本 {{version}}</text>
+    </view>
+
+    <view class="info-card">
+      <view class="info-row">
+        <text class="info-label">应用名称</text>
+        <text class="info-value">数智优购</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">当前版本</text>
+        <text class="info-value">{{version}}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">技术支持</text>
+        <text class="info-value">微信小程序</text>
+      </view>
+    </view>
+
+    <view class="story-card">
+      <text class="story-title">逛、选、买、复购</text>
+    </view>
+
+    <view class="footer-note">
+      <text>© 2026 数智优购</text>
+    </view>
+
+    <view style="height: 40rpx;"></view>
+  </scroll-view>
+</view>
+

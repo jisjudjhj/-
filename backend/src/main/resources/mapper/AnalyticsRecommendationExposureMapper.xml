@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.AnalyticsRecommendationExposureMapper">
+
+    <sql id="baseMetricColumns">
+        COUNT(*) AS exposureCount,
+        COUNT(DISTINCT user_id) AS userCount,
+        SUM(CASE WHEN click_time IS NOT NULL THEN 1 ELSE 0 END) AS clickCount,
+        SUM(CASE WHEN favorite_time IS NOT NULL THEN 1 ELSE 0 END) AS favoriteCount,
+        SUM(CASE WHEN cart_time IS NOT NULL THEN 1 ELSE 0 END) AS cartCount,
+        SUM(CASE WHEN purchase_time IS NOT NULL THEN 1 ELSE 0 END) AS purchaseCount,
+        SUM(CASE
+                WHEN click_time IS NOT NULL
+                    OR favorite_time IS NOT NULL
+                    OR cart_time IS NOT NULL
+                    OR purchase_time IS NOT NULL
+                THEN 1
+                ELSE 0
+            END) AS successCount
+    </sql>
+
+    <sql id="baseMetricWhere">
+        FROM analytics_recommendation_exposure
+        WHERE user_id &gt; 0
+        <if test="startTime != null">
+            AND exposure_time &gt;= #{startTime}
+        </if>
+    </sql>
+
+    <select id="selectOverallMetrics" resultType="java.util.Map">
+        SELECT
+        <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+    </select>
+
+    <select id="selectBusinessMetrics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS exposureCount,
+            SUM(CASE WHEN e.click_time IS NOT NULL THEN 1 ELSE 0 END) AS clickCount,
+            SUM(CASE WHEN e.purchase_time IS NOT NULL THEN 1 ELSE 0 END) AS purchaseCount,
+            AVG(CASE
+                    WHEN e.purchase_time IS NOT NULL
+                        AND e.order_id IS NOT NULL
+                        AND o.total_amount IS NOT NULL
+                    THEN o.total_amount
+                    ELSE NULL
+                END) AS aov
+        FROM analytics_recommendation_exposure e
+        LEFT JOIN `order` o ON o.id = e.order_id
+        WHERE e.user_id &gt; 0
+        <if test="startTime != null">
+            AND e.exposure_time &gt;= #{startTime}
+        </if>
+    </select>
+
+    <select id="selectSceneMetrics" resultType="java.util.Map">
+        SELECT
+            scene,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        GROUP BY scene
+        ORDER BY exposureCount DESC, scene ASC
+    </select>
+
+    <select id="selectSegmentMetrics" resultType="java.util.Map">
+        SELECT
+            segment_code AS segmentCode,
+            MAX(segment_name) AS segmentName,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        AND segment_code IS NOT NULL
+        AND segment_code != ''
+        GROUP BY segment_code
+        ORDER BY exposureCount DESC, segmentCode ASC
+    </select>
+
+    <select id="selectAlgorithmMetrics" resultType="java.util.Map">
+        SELECT
+            algorithm,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        AND algorithm IS NOT NULL
+        AND algorithm != ''
+        GROUP BY algorithm
+        ORDER BY exposureCount DESC, algorithm ASC
+    </select>
+
+    <select id="selectAlgorithmSegmentMetrics" resultType="java.util.Map">
+        SELECT
+            algorithm,
+            segment_code AS segmentCode,
+            MAX(segment_name) AS segmentName,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        AND algorithm IS NOT NULL
+        AND algorithm != ''
+        AND segment_code IS NOT NULL
+        AND segment_code != ''
+        GROUP BY algorithm, segment_code
+        ORDER BY exposureCount DESC, algorithm ASC, segmentCode ASC
+    </select>
+
+    <select id="selectSceneAlgorithmMetrics" resultType="java.util.Map">
+        SELECT
+            scene,
+            algorithm,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        AND scene IS NOT NULL
+        AND scene != ''
+        AND algorithm IS NOT NULL
+        AND algorithm != ''
+        GROUP BY scene, algorithm
+        ORDER BY scene ASC, exposureCount DESC, algorithm ASC
+    </select>
+
+    <select id="selectSourceTypeMetrics" resultType="java.util.Map">
+        SELECT
+            source_type AS sourceType,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        AND source_type IS NOT NULL
+        AND source_type != ''
+        GROUP BY source_type
+        ORDER BY exposureCount DESC, sourceType ASC
+    </select>
+
+    <select id="selectReasonTypeMetrics" resultType="java.util.Map">
+        SELECT
+            reason_type AS reasonType,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        AND reason_type IS NOT NULL
+        AND reason_type != ''
+        GROUP BY reason_type
+        ORDER BY exposureCount DESC, reasonType ASC
+    </select>
+
+    <select id="selectModelVersionMetrics" resultType="java.util.Map">
+        SELECT
+            model_version AS modelVersion,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        AND model_version IS NOT NULL
+        AND model_version != ''
+        GROUP BY model_version
+        ORDER BY exposureCount DESC, modelVersion ASC
+    </select>
+
+    <select id="selectSevenDayRepurchaseMetrics" resultType="java.util.Map">
+        SELECT
+            COUNT(*) AS attributedPurchaseUsers,
+            SUM(CASE WHEN repurchase.user_id IS NOT NULL THEN 1 ELSE 0 END) AS repurchaseUsers
+        FROM (
+            SELECT
+                user_id,
+                MIN(purchase_time) AS firstPurchaseTime
+            FROM analytics_recommendation_exposure
+            WHERE user_id &gt; 0
+              AND purchase_time IS NOT NULL
+              <if test="startTime != null">
+                  AND purchase_time &gt;= #{startTime}
+              </if>
+            GROUP BY user_id
+        ) seed
+        LEFT JOIN (
+            SELECT DISTINCT
+                fp.user_id
+            FROM (
+                SELECT
+                    user_id,
+                    MIN(purchase_time) AS firstPurchaseTime
+                FROM analytics_recommendation_exposure
+                WHERE user_id &gt; 0
+                  AND purchase_time IS NOT NULL
+                  <if test="startTime != null">
+                      AND purchase_time &gt;= #{startTime}
+                  </if>
+                GROUP BY user_id
+            ) fp
+            INNER JOIN `order` o
+                ON o.user_id = fp.user_id
+               AND o.status IN (1, 2, 3)
+               AND o.create_time &gt; fp.firstPurchaseTime
+               AND o.create_time &lt;= DATE_ADD(fp.firstPurchaseTime, INTERVAL 7 DAY)
+        ) repurchase
+            ON repurchase.user_id = seed.user_id
+    </select>
+
+    <select id="selectDailyMetrics" resultType="java.util.Map">
+        SELECT
+            DATE(exposure_time) AS statDate,
+            <include refid="baseMetricColumns"/>
+        <include refid="baseMetricWhere"/>
+        GROUP BY DATE(exposure_time)
+        ORDER BY statDate ASC
+    </select>
+
+</mapper>

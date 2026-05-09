@@ -1,0 +1,267 @@
+<view class="pay-page">
+  <custom-nav-bar title="确认订单" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <scroll-view class="pay-scroll" scroll-y>
+    <view class="section warning" wx:if="{{checkoutMode === 'seckill'}}">
+      <text class="warning-tag">秒杀订单</text>
+      <text class="warning-text">活动价不可叠加优惠券，超时或库存变更会自动失效。</text>
+    </view>
+
+    <view class="section address active-opacity" bindtap="chooseAddress">
+      <view class="section-head">
+        <view>
+          <text class="section-title">配送地址</text>
+        </view>
+        <view class="arrow-right"></view>
+      </view>
+      <view class="address-card" wx:if="{{address}}">
+        <view class="address-user">
+          <text class="user-name">{{address.name}}</text>
+          <text class="user-phone">{{address.phone}}</text>
+        </view>
+        <text class="address-detail">{{address.province}} {{address.city}} {{address.district}} {{address.detail}}</text>
+      </view>
+      <view class="address-empty" wx:else>
+        <text>请选择收货地址</text>
+      </view>
+    </view>
+
+    <view class="section goods">
+      <view class="section-head">
+        <view>
+          <text class="section-title">商品清单</text>
+        </view>
+        <text class="section-badge">{{goodsList.length}} 件</text>
+      </view>
+      <view class="goods-item" wx:for="{{goodsList}}" wx:key="id">
+        <image wx:if="{{item.image}}" class="goods-img" src="{{item.image}}" mode="aspectFill" binderror="handleCheckoutGoodsImageError" data-index="{{index}}"></image>
+        <view wx:else class="goods-img image-placeholder">
+          <text class="image-placeholder-text">待结算商品</text>
+        </view>
+        <view class="goods-info">
+          <text class="goods-title text-ellipsis-2">{{item.title}}</text>
+          <text class="goods-meta">{{checkoutMode === 'seckill' ? '秒杀商品' : (checkoutMode === 'direct' ? '立即购买商品' : '普通商品')}}</text>
+          <view class="goods-row">
+            <view class="goods-price">
+              <text class="price-symbol">¥</text>{{item.price}}
+            </view>
+            <text class="goods-origin" wx:if="{{checkoutMode === 'seckill' && item.originalPrice}}">¥{{item.originalPrice}}</text>
+            <text class="goods-qty">x{{item.quantity}}</text>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section checkout-signals" wx:if="{{checkoutSignals}}">
+      <view class="section-head">
+        <view>
+          <text class="section-title">智能结算校验</text>
+          <text class="section-tip">优惠、库存、拆单和推荐归因已在提交前确认</text>
+        </view>
+      </view>
+      <view class="signal-grid">
+        <view class="signal-item">
+          <text class="signal-label">优惠券智能匹配</text>
+          <text class="signal-value">{{checkoutSignals.couponText}}</text>
+        </view>
+        <view class="signal-item {{checkoutSignals.stockRisk ? 'signal-risk' : ''}}">
+          <text class="signal-label">库存校验</text>
+          <text class="signal-value">{{checkoutSignals.stockText}}</text>
+        </view>
+        <view class="signal-item">
+          <text class="signal-label">价格校验</text>
+          <text class="signal-value">{{checkoutSignals.priceText}}</text>
+        </view>
+        <view class="signal-item">
+          <text class="signal-label">跨店拆单</text>
+          <text class="signal-value">{{checkoutSignals.splitText}}</text>
+        </view>
+      </view>
+      <view class="attribution-card" wx:if="{{checkoutSignals.attribution}}">
+        <view class="attribution-main">
+          <text class="attribution-label">推荐 token 归因</text>
+          <text class="attribution-source">{{checkoutSignals.attribution.sourceLabel}}</text>
+        </view>
+        <text class="attribution-token">Token {{checkoutSignals.attribution.tokenText}}</text>
+      </view>
+    </view>
+
+    <view class="section payment">
+      <view class="section-head">
+        <view>
+          <text class="section-title">支付方式</text>
+        </view>
+      </view>
+      <view class="payment-item {{selectedPayment === 'balance' ? 'payment-item-active' : ''}}" bindtap="selectPayment" data-type="balance">
+        <view class="payment-icon"></view>
+        <view class="payment-main">
+          <text class="payment-name">余额支付</text>
+          <text class="payment-balance">可用余额 ¥{{balance}}</text>
+        </view>
+        <view class="payment-radio {{selectedPayment === 'balance' ? 'payment-radio-active' : ''}}"></view>
+      </view>
+      <view class="payment-item {{selectedPayment === 'later' ? 'payment-item-active' : ''}}" wx:if="{{checkoutMode !== 'seckill'}}" bindtap="selectPayment" data-type="later">
+        <view class="payment-icon payment-icon-later"></view>
+        <view class="payment-main">
+          <text class="payment-name">下单后支付</text>
+        <text class="payment-balance">订单中心支付</text>
+        </view>
+        <view class="payment-radio {{selectedPayment === 'later' ? 'payment-radio-active' : ''}}"></view>
+      </view>
+      <view class="payment-item payment-item-disabled" wx:if="{{checkoutMode !== 'seckill'}}">
+        <view class="payment-icon payment-icon-wechat"></view>
+        <view class="payment-main">
+          <text class="payment-name">微信支付</text>
+          <text class="payment-balance">暂未开放</text>
+        </view>
+        <text class="payment-disabled-text">即将上线</text>
+      </view>
+      <view class="balance-tip balance-tip-warn" wx:if="{{selectedPayment === 'balance' && balance * 1 < finalPrice * 1}}">
+        余额不足，请先
+        <text class="link-text" bindtap="goToWallet">充值</text>
+      </view>
+    </view>
+
+    <view class="section smart-guide" wx:if="{{checkoutMode === 'normal' && smartGuide}}">
+      <view class="smart-guide-head">
+        <view class="smart-guide-icon"></view>
+        <view class="smart-guide-title-wrap">
+          <text class="section-title">智能省钱助手</text>
+        </view>
+        <view class="smart-guide-apply active-opacity" bindtap="applySmartGuideCoupon">一键应用</view>
+      </view>
+
+      <view class="smart-guide-highlight">
+        <text class="smart-guide-label">最省方案</text>
+        <text class="smart-guide-coupon">{{smartGuide.bestCouponName}}</text>
+        <view class="smart-guide-money">
+          <text class="smart-guide-discount">立省 ¥{{smartGuide.bestDiscount}}</text>
+          <text class="smart-guide-final">实付 ¥{{smartGuide.bestFinalAmount}}</text>
+        </view>
+      </view>
+
+      <view class="smart-guide-copy">{{smartGuide.text}}</view>
+
+      <view class="smart-guide-why" wx:if="{{smartGuide.savingExplain}}">
+        <text class="smart-guide-why-title">省钱明细</text>
+        <text class="smart-guide-why-line">用券：{{smartGuide.savingExplain.couponName}}</text>
+        <text class="smart-guide-why-line">门槛：{{smartGuide.savingExplain.thresholdText}}</text>
+        <text class="smart-guide-why-line">立减：¥{{smartGuide.savingExplain.discountText}}</text>
+        <text class="smart-guide-why-line">类型：{{smartGuide.savingExplain.scopeLabel}}</text>
+      </view>
+
+      <view class="smart-guide-alt" wx:if="{{smartGuide.alternatives.length}}">
+        <text class="smart-guide-alt-title">备选方案</text>
+        <view class="smart-guide-alt-item" wx:for="{{smartGuide.alternatives}}" wx:key="couponName">
+          <text class="smart-guide-alt-name text-ellipsis">{{item.couponName}}</text>
+          <text class="smart-guide-alt-price">¥{{item.finalAmount}}</text>
+        </view>
+      </view>
+
+      <view class="smart-guide-topup" wx:if="{{smartGuide.topUp}}">
+        <text class="smart-guide-topup-text">可凑单 ¥{{smartGuide.topUp.amountGap}} 后使用「{{smartGuide.topUp.couponName}}」，预计实付 ¥{{smartGuide.topUp.estimatedFinalAmount}}</text>
+      </view>
+    </view>
+
+    <view class="section coupon active-opacity" wx:if="{{checkoutMode === 'normal'}}" bindtap="handleSelectCoupon">
+      <view class="section-head">
+        <view>
+          <text class="section-title">优惠券</text>
+        </view>
+        <view class="arrow-right"></view>
+      </view>
+      <view class="coupon-body" wx:if="{{selectedCouponId}}">
+        <text class="coupon-name">{{selectedCoupon.couponName}}</text>
+        <view class="coupon-meta">
+          <text class="coupon-tag">{{selectedCoupon.scopeLabel}}</text>
+          <text class="coupon-discount">-¥{{discount}}</text>
+        </view>
+      </view>
+      <text class="coupon-empty" wx:else>{{availableCoupons.length ? '选择优惠券' : '暂无可用优惠券'}}</text>
+    </view>
+
+    <view class="section summary">
+      <view class="section-head">
+        <view>
+          <text class="section-title">费用明细</text>
+        </view>
+      </view>
+      <view class="summary-row">
+        <text class="summary-label">商品总额</text>
+        <text class="summary-value">¥{{totalGoodsPrice}}</text>
+      </view>
+      <view class="summary-row">
+        <text class="summary-label">运费</text>
+        <text class="summary-value">+ ¥{{shippingFee}}</text>
+      </view>
+      <view class="summary-row discount">
+        <text class="summary-label">优惠折扣</text>
+        <text class="summary-value">- ¥{{discount}}</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-total">
+        <text class="total-label">实付款</text>
+        <view class="total-value">
+          <text class="price-symbol">¥</text>
+          <text class="total-price">{{finalPrice}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view style="height: 250rpx;"></view>
+  </scroll-view>
+
+  <custom-popup show="{{showCouponPicker}}" position="bottom" round closeable bind:close="closeCouponPicker">
+    <view class="coupon-picker">
+      <view class="coupon-picker-head">
+        <text class="coupon-picker-title">选择优惠券</text>
+      </view>
+
+      <view class="coupon-option {{!selectedCouponId ? 'active' : ''}}" bindtap="selectCouponOption" data-id="none">
+        <view class="coupon-option-band none-band">
+          <text class="coupon-option-band-title">不使用</text>
+        </view>
+        <view class="coupon-option-body">
+          <text class="coupon-option-name">不使用优惠券</text>
+        </view>
+        <view class="coupon-option-check"></view>
+      </view>
+
+      <view
+        class="coupon-option {{selectedCouponId === item.userCouponId ? 'active' : ''}}"
+        wx:for="{{availableCoupons}}"
+        wx:key="userCouponId"
+        bindtap="selectCouponOption"
+        data-id="{{item.userCouponId}}"
+      >
+        <view class="coupon-option-band {{item.scopeType === 1 ? 'merchant-band' : 'platform-band'}}">
+          <text class="coupon-option-band-symbol">¥</text>
+          <text class="coupon-option-band-value">{{item.discountAmount}}</text>
+        </view>
+        <view class="coupon-option-body">
+          <text class="coupon-option-name text-ellipsis">{{item.couponName}}</text>
+          <view class="coupon-option-meta">
+            <text class="coupon-option-tag">{{item.scopeLabel}}</text>
+            <text class="coupon-option-desc">预计立省 ¥{{item.discountAmount}}</text>
+          </view>
+        </view>
+        <view class="coupon-option-check"></view>
+      </view>
+    </view>
+  </custom-popup>
+
+  <view class="submit-wrap">
+    <view class="submit-bar">
+      <view class="submit-info">
+        <text class="submit-tip">{{selectedPayment === 'balance' ? '提交后将创建订单并尝试支付' : '提交后将创建订单，可在订单中心支付'}}</text>
+        <view class="submit-money">
+          <text class="price-symbol">¥</text>
+          <text class="submit-price">{{finalPrice}}</text>
+        </view>
+      </view>
+      <custom-button type="primary" size="large" bind:click="submitOrder" disabled="{{submitting}}" customStyle="min-width: 228rpx;">
+        {{submitting ? '提交中...' : '提交订单'}}
+      </custom-button>
+    </view>
+  </view>
+</view>

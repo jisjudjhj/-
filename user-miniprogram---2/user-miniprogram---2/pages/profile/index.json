@@ -1,0 +1,10 @@
+{
+  "usingComponents": {
+    "custom-nav-bar": "/components/custom-nav-bar/index",
+    "number-ticker": "/components/number-ticker/index"
+  },
+  "navigationStyle": "custom",
+  "enablePullDownRefresh": true,
+  "backgroundColor": "#F5F5F7",
+  "backgroundTextStyle": "dark"
+}

@@ -1,0 +1,195 @@
+<scroll-view
+  class="container"
+  scroll-y
+  scroll-with-animation
+  scroll-into-view="{{scrollIntoView}}"
+  bindscroll="onScroll"
+  refresher-enabled
+  refresher-triggered="{{refreshing}}"
+  bindrefresherrefresh="onRefresh"
+>
+<custom-nav-bar title="秒杀会场" showBack="{{true}}" isScrolled="{{isScrolled}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <view class="hero-stage">
+    <view class="hero-overlay"></view>
+    <view class="hero-card">
+      <text class="hero-eyebrow">秒杀会场</text>
+      <text class="hero-title">限时秒杀会场</text>
+      <view class="hero-meta-row">
+        <view class="hero-meta-chip">实时倒计时</view>
+        <view class="hero-meta-chip">场次导航</view>
+      </view>
+    </view>
+  </view>
+
+  <view class="tab-shell">
+    <view class="tab-bar">
+      <view
+        wx:for="{{tabs}}"
+        wx:key="value"
+        class="tab-item {{activeTab === item.value ? 'active' : ''}}"
+        bindtap="switchTab"
+        data-value="{{item.value}}"
+      >
+        <text class="tab-label">{{item.label}}</text>
+        <text class="tab-count">{{item.count}}</text>
+      </view>
+    </view>
+  </view>
+
+  <view id="timelinePanel" class="timeline-panel" wx:if="{{!seckillLoading && timelineSessions.length}}">
+    <view class="timeline-header">
+      <text class="timeline-title">场次时间轴</text>
+    </view>
+    <scroll-view
+      class="timeline-scroll"
+      scroll-x
+      enhanced
+      show-scrollbar="{{false}}"
+      scroll-with-animation
+      scroll-into-view="{{timelineIntoView}}"
+    >
+      <view class="timeline-list">
+        <view class="timeline-track"></view>
+        <view
+          wx:for="{{timelineSessions}}"
+          wx:key="groupKey"
+          id="{{item.timelineId}}"
+          class="timeline-session {{item.isSelected ? 'active' : ''}}"
+          bindtap="selectTimelineSession"
+          data-group-key="{{item.groupKey}}"
+        >
+          <view class="timeline-date">{{item.dateText}}</view>
+          <view class="timeline-week">{{item.weekText}}</view>
+          <view class="timeline-node-row">
+            <view class="timeline-node {{item.runtimeStatus === 1 ? 'active' : (item.runtimeStatus === 0 ? 'upcoming' : 'history')}}"></view>
+          </view>
+          <view class="timeline-card {{item.runtimeStatus === 1 ? 'active' : (item.runtimeStatus === 0 ? 'upcoming' : 'history')}} {{item.isSelected ? 'selected' : ''}}">
+            <view class="timeline-card-top">
+              <text class="timeline-time">{{item.timeText}}</text>
+              <text class="timeline-status">{{item.statusLabel}}</text>
+            </view>
+            <view class="timeline-name text-ellipsis">{{item.title}}</view>
+            <view class="timeline-countdown text-ellipsis">{{item.countdownText}}</view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="list-wrap">
+    <view class="loading-wrap" wx:if="{{seckillLoading}}">
+      <text class="loading-text">秒杀会场加载中...</text>
+    </view>
+
+    <view class="empty-wrap" wx:elif="{{!displayGroups.length}}">
+      <view class="empty-title">{{seckillEmptyTitle}}</view>
+      <view class="empty-desc">{{seckillEmptyDesc}}</view>
+    </view>
+
+    <view class="group-list" wx:else>
+      <block wx:for="{{displayGroups}}" wx:key="groupKey" wx:for-item="group" wx:for-index="groupIndex">
+        <view id="{{group.anchorId}}" class="group-anchor"></view>
+
+        <view class="activity-group {{group.isSelected ? 'selected' : ''}}">
+          <view class="group-header">
+            <image
+              wx:if="{{group.activityCoverImage}}"
+              class="group-cover"
+              src="{{group.activityCoverImage}}"
+              mode="aspectFill"
+              binderror="handleGroupCoverError"
+              data-group-index="{{groupIndex}}"
+            ></image>
+            <view wx:else class="group-cover group-cover-placeholder">
+              <text class="group-cover-placeholder-text">会场图</text>
+            </view>
+            <view class="group-info">
+              <text class="group-kicker">场次商品</text>
+              <view class="group-title-row">
+                <text class="group-status-badge {{group.runtimeStatus === 1 ? 'active' : (group.runtimeStatus === 0 ? 'upcoming' : 'history')}}">{{group.statusLabel}}</text>
+                <text class="group-title">{{group.activityName}}</text>
+              </view>
+              <view class="group-desc" wx:if="{{group.activityDescription}}">{{group.activityDescription}}</view>
+              <view class="group-time">{{group.timeText}}</view>
+              <view class="group-meta">
+                <text class="group-countdown">{{group.countdownText}}</text>
+                <text class="group-divider">·</text>
+                <text class="group-summary">第{{group.orderIndex}}场</text>
+                <text class="group-divider">·</text>
+                <text class="group-summary">剩余{{group.remainingStock}}</text>
+                <text class="group-divider">·</text>
+                <text class="group-summary">{{group.productCount}}款</text>
+              </view>
+            </view>
+          </view>
+
+          <view class="product-list">
+            <view
+              class="seckill-item"
+              wx:for="{{group.items}}"
+              wx:key="id"
+              wx:for-item="product"
+              wx:for-index="productIndex"
+              bindtap="goToSeckillProduct"
+              data-id="{{product.id}}"
+            >
+              <view class="seckill-image-wrap">
+                <image
+                  wx:if="{{product.image}}"
+                  class="seckill-product-image"
+                  src="{{product.image}}"
+                  mode="aspectFill"
+                  lazy-load="true"
+                  binderror="handleProductImageError"
+                  data-group-index="{{groupIndex}}"
+                  data-item-index="{{productIndex}}"
+                ></image>
+                <view wx:else class="seckill-product-image seckill-product-placeholder">
+                  <text class="seckill-product-placeholder-text">暂无图片</text>
+                </view>
+                <text class="seckill-image-badge {{product.seckillStatus === 1 ? 'active' : (product.seckillStatus === 0 ? 'upcoming' : 'history')}}">{{product.seckillStatusLabel}}</text>
+              </view>
+
+              <view class="seckill-product-main">
+                <view class="seckill-product-top">
+                  <text class="seckill-product-title text-ellipsis-2">{{product.title}}</text>
+                  <text class="seckill-product-sub text-ellipsis">{{product.extraInfo}}</text>
+                </view>
+
+                <view class="seckill-price-line">
+                  <view class="seckill-price-main">
+                    <text class="seckill-price-symbol">¥</text>
+                    <text class="seckill-price-now">{{product.seckillPriceText}}</text>
+                  </view>
+                  <text class="seckill-origin">¥{{product.originalPriceText}}</text>
+                </view>
+
+                <view class="seckill-progress">
+                  <view class="seckill-progress-bar">
+                    <view class="seckill-progress-fill" style="width: {{product.progressPercent}}%;"></view>
+                  </view>
+                  <text class="seckill-progress-text">{{product.soldText}}</text>
+                </view>
+
+                <view class="seckill-product-foot">
+                  <text class="seckill-countdown text-ellipsis">{{product.countdownText}}</text>
+                  <view
+                    class="seckill-action {{product.seckillStatus === 1 ? 'active' : ''}}"
+                    catchtap="goToSeckillProduct"
+                    data-id="{{product.id}}"
+                  >
+                    {{product.seckillStatus === 1 ? '立即秒杀' : (product.seckillStatus === 0 ? '即将开始' : '查看历史')}}
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </block>
+    </view>
+  </view>
+
+  <view class="page-bottom-spacer page-bottom-spacer--small"></view>
+</scroll-view>
+

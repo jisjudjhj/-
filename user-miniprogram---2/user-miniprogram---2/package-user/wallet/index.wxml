@@ -1,0 +1,98 @@
+<scroll-view class="page" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+<custom-nav-bar title="钱包" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <view class="hero">
+    <text class="hero-kicker">账户钱包</text>
+    <text class="hero-label">账户余额（元）</text>
+    <text class="hero-amount">{{balance}}</text>
+    <view class="hero-action" bindtap="openRechargePopup">立即充值</view>
+  </view>
+
+  <view class="ledger">
+    <view class="ledger-head">
+      <view>
+        <text class="ledger-title">资金流水</text>
+        <text class="ledger-sub">{{activeType ? '按类型筛选中' : '全部交易记录'}}</text>
+      </view>
+    </view>
+
+    <view class="chips">
+      <view
+        class="chip {{activeType === item.value ? 'active' : ''}}"
+        wx:for="{{typeTabs}}"
+        wx:key="value"
+        data-type="{{item.value}}"
+        bindtap="switchType"
+      >
+        {{item.label}}
+      </view>
+    </view>
+
+    <view class="list" wx:if="{{transactions.length}}">
+      <view class="item" wx:for="{{transactions}}" wx:key="id">
+        <view class="item-left">
+          <view class="item-icon {{item.directionClass}}">{{item.directionClass === 'income' ? '+' : '-'}}</view>
+          <view class="item-info">
+            <view class="item-top">
+              <text class="item-desc text-ellipsis">{{item.description}}</text>
+              <text class="item-type">{{item.typeText}}</text>
+            </view>
+            <text class="item-time">{{item.createTime}}</text>
+          </view>
+        </view>
+        <text class="item-amount {{item.directionClass}}">{{item.amountText}}</text>
+      </view>
+    </view>
+
+    <view class="empty" wx:elif="{{!loading}}">
+      <text class="empty-title">{{activeType ? '暂无记录' : '暂无交易'}}</text>
+      <text class="empty-desc">{{activeType ? '切换筛选查看' : '充值后查看'}}</text>
+    </view>
+
+    <view class="load-more" wx:if="{{hasMore && transactions.length}}" bindtap="loadMore">加载更多</view>
+  </view>
+
+  <view style="height: 60rpx;"></view>
+</scroll-view>
+
+<custom-popup show="{{showRecharge}}" position="bottom" round bind:close="closeRechargePopup">
+  <view class="recharge-popup">
+    <view class="popup-title">余额充值</view>
+    <view class="popup-subtitle">选择固定金额或输入自定义金额，充值结果将写入交易流水。</view>
+
+    <view class="amount-grid">
+      <view
+        class="amount-option {{rechargeAmount === item ? 'active' : ''}}"
+        wx:for="{{amountOptions}}"
+        wx:key="*this"
+        bindtap="selectAmount"
+        data-amount="{{item}}"
+      >
+        ¥{{item}}
+      </view>
+    </view>
+
+    <view class="custom-row">
+      <text class="custom-label">自定义金额</text>
+      <view class="custom-wrap">
+        <text class="custom-prefix">¥</text>
+        <input
+          class="custom-input"
+          type="digit"
+          placeholder="输入金额"
+          value="{{customAmount}}"
+          bindinput="onCustomInput"
+        />
+      </view>
+    </view>
+
+    <view class="recharge-tip">充值结果将写入账户流水，请确认金额后提交。</view>
+
+    <view class="recharge-footer">
+      <custom-button type="primary" size="large" block bind:click="confirmRecharge">
+        确认充值 ¥{{rechargeAmount || '0'}}
+      </custom-button>
+    </view>
+  </view>
+</custom-popup>
+

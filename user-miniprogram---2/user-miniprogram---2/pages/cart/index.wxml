@@ -1,0 +1,114 @@
+<view class="container bg-gradient-primary">
+  <custom-nav-bar title="购物车 ({{cartList.length}})" showBack="{{false}}" backgroundColor="transparent" color="#111827"></custom-nav-bar>
+
+  <scroll-view class="cart-scroll" scroll-y wx:if="{{cartList.length > 0}}" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+    <view class="cart-content">
+      <view class="cart-list">
+        <view class="cart-item-wrap" wx:for="{{cartList}}" wx:key="id" style="animation-delay: {{index * 56}}ms;">
+          <view class="cart-item-delete" bindtap="deleteItem" data-index="{{index}}">
+            <text class="delete-text">移出</text>
+          </view>
+
+          <view class="cart-item card-elevated {{item.isTouchMove ? 'touch-move-active' : ''}}" bindtouchstart="touchstart" bindtouchmove="touchmove" data-index="{{index}}">
+            <view class="checkbox-wrap" bindtap="toggleSelect" data-index="{{index}}">
+              <view class="checkbox {{item.selected ? 'checked' : ''}}">
+                <view class="checkbox-inner"></view>
+              </view>
+            </view>
+
+            <view class="cart-media-wrap">
+              <image wx:if="{{item.image}}" class="cart-img" src="{{item.image}}" mode="aspectFill" lazy-load="true" binderror="handleCartImageError" data-index="{{index}}"></image>
+              <view wx:else class="cart-img image-placeholder">
+                <text class="image-placeholder-text">购物车商品</text>
+              </view>
+              <view class="badge-rose cart-item-badge" wx:if="{{item.checkoutBlocked}}">
+                <view class="badge-dot"></view>
+                <text>秒杀中</text>
+              </view>
+            </view>
+
+            <view class="cart-info">
+              <text class="cart-title text-ellipsis-2 text-heading">{{item.title}}</text>
+              <view class="cart-blocked-reason" wx:if="{{item.checkoutBlocked}}">{{item.blockedReason || '秒杀中'}}</view>
+              <view class="cart-meta-line">
+                <text class="cart-meta-chip">{{item.quantityLabel}}</text>
+                <text class="cart-meta-text">{{item.unitPriceText}}</text>
+              </view>
+
+              <view class="cart-bottom">
+                <view class="cart-price-stack">
+                  <view class="cart-price-row">
+                    <text class="price-symbol">¥</text>
+                    <text class="cart-price">{{item.price}}</text>
+                  </view>
+                  <text class="cart-subtotal">小计 ¥{{item.subtotalText}}</text>
+                </view>
+                <view class="quantity-control {{item.checkoutBlocked ? 'quantity-disabled' : ''}}">
+                  <view class="qty-btn {{item.quantity <= 1 || item.checkoutBlocked ? 'disabled' : ''}}" bindtap="changeQuantity" data-index="{{index}}" data-type="minus">-</view>
+                  <view class="qty-num">{{item.quantity}}</view>
+                  <view class="qty-btn {{item.checkoutBlocked ? 'disabled' : ''}}" bindtap="changeQuantity" data-index="{{index}}" data-type="add">+</view>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="page-bottom-spacer page-bottom-spacer--cart"></view>
+  </scroll-view>
+
+  <view class="empty-cart" wx:else>
+    <view class="empty-poster">
+      <view class="empty-icon-wrap">
+        <view class="empty-icon"></view>
+      </view>
+      <view class="empty-title">购物车还是空的</view>
+      <view class="empty-desc">暂无商品</view>
+      <custom-button type="primary" size="large" bind:click="goExplore" customStyle="width: 320rpx;border-radius:999rpx;">去逛逛</custom-button>
+    </view>
+  </view>
+
+  <view class="checkout-bar-wrap" wx:if="{{cartList.length > 0}}">
+    <view class="checkout-bar glass-card-soft {{selectedCount > 0 ? 'checkout-bar-active' : ''}}">
+      <view class="checkout-left active-opacity" bindtap="toggleSelectAll">
+        <view class="checkbox {{isAllSelected ? 'checked' : ''}}">
+          <view class="checkbox-inner"></view>
+        </view>
+        <view class="checkout-left-texts">
+          <text class="select-all-text text-heading">全选商品</text>
+          <text class="select-all-sub text-description">已选 {{selectedCount}} 件</text>
+        </view>
+      </view>
+
+      <view class="checkout-right">
+        <view class="total-info">
+          <text class="total-label text-description">合计</text>
+          <view class="total-price-row">
+            <text class="price-symbol total-price-symbol">¥</text>
+            <number-ticker class="total-price text-brand" value="{{totalPriceNum}}" decimals="2"></number-ticker>
+          </view>
+          <view class="savings-row">
+            <text class="savings-hint savings-hint-{{savingsHintTone}} {{smartSavingsLoading ? 'savings-hint-loading' : ''}}">{{savingsHintText}}</text>
+            <view class="savings-why-btn" wx:if="{{estimatedSavingsNum > 0 && savingsExplain}}" catchtap="toggleSavingsExplain">?</view>
+          </view>
+          <view class="savings-popover glass-card" wx:if="{{showSavingsExplain && savingsExplain}}" catchtap="hideSavingsExplain">
+            <text class="savings-popover-title text-heading">省钱明细</text>
+            <text class="savings-popover-line text-description">用券：{{savingsExplain.couponName}}</text>
+            <text class="savings-popover-line text-description">门槛：{{savingsExplain.thresholdText}}</text>
+            <text class="savings-popover-line text-description">立减：¥{{savingsExplain.discountText}}</text>
+            <text class="savings-popover-line text-description">类型：{{savingsExplain.scopeLabel}}</text>
+          </view>
+        </view>
+        <view class="smart-entry active-opacity glass-card-soft {{selectedCount === 0 ? 'smart-entry-disabled' : ''}}" bindtap="goSmartCheckout">
+          <view class="smart-entry-icon {{smartGuideLoading ? 'smart-entry-icon-loading' : ''}}"></view>
+          <text class="smart-entry-text text-heading">{{smartGuideLoading ? '计算中' : '最省方案'}}</text>
+        </view>
+        <view class="checkout-btn-wrap {{selectedCount > 0 ? 'checkout-btn-ready' : ''}}">
+          <button class="btn-primary-gradient" disabled="{{selectedCount === 0}}" bindtap="goToCheckout">
+            去结算 ({{selectedCount}})
+          </button>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

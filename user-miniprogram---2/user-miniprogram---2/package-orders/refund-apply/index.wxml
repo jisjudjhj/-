@@ -1,0 +1,107 @@
+<view class="container">
+<custom-nav-bar title="申请退款" showBack="{{true}}" backgroundColor="transparent" color="#111111"></custom-nav-bar>
+
+  <scroll-view class="content-scroll" scroll-y>
+    <view wx:if="{{loading}}" class="state-wrap">
+      <text class="state-text">加载中...</text>
+    </view>
+
+    <view wx:elif="{{!order}}" class="state-wrap">
+      <text class="state-text">加载失败</text>
+    </view>
+
+    <block wx:else>
+      <view class="section">
+        <view class="section-title">退款订单</view>
+        <view class="order-meta">
+          <view class="meta-row">
+            <text class="meta-label">订单号</text>
+            <text class="meta-value">{{order.orderNo}}</text>
+          </view>
+          <view class="meta-row">
+            <text class="meta-label">订单状态</text>
+            <text class="meta-value">{{order.statusText}}</text>
+          </view>
+          <view class="meta-row">
+            <text class="meta-label">退款金额</text>
+            <text class="meta-value price">¥{{order.totalPrice}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="section">
+        <view class="section-title">商品信息</view>
+        <view class="goods-item" wx:for="{{order.goods}}" wx:key="id">
+          <image wx:if="{{item.image}}" class="goods-img" src="{{item.image}}" mode="aspectFill" binderror="handleRefundGoodsImageError" data-index="{{index}}"></image>
+          <view wx:else class="goods-img image-placeholder">
+            <text class="image-placeholder-text">退款商品</text>
+          </view>
+          <view class="goods-info">
+            <view class="goods-title">{{item.title}}</view>
+            <view class="goods-bottom">
+              <text class="goods-price">¥{{item.price}}</text>
+              <text class="goods-qty">x{{item.quantity}}</text>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <view class="section">
+        <view class="section-title">退款原因</view>
+        <view class="reason-options">
+          <view
+            class="reason-chip {{reason === item ? 'active' : ''}}"
+            wx:for="{{reasonOptions}}"
+            wx:key="*this"
+            data-reason="{{item}}"
+            bindtap="chooseReason"
+          >
+            {{item}}
+          </view>
+        </view>
+        <textarea
+          class="reason-textarea"
+          placeholder="补充退款原因"
+          maxlength="120"
+          value="{{reason}}"
+          bindinput="onReasonInput"
+        />
+        <view class="reason-count">{{reason.length}}/120</view>
+      </view>
+
+      <view class="service-card">
+        <view class="service-head">
+          <view>
+            <view class="service-title">售后协商</view>
+            <view class="service-desc">先和商家沟通，协商不成可找平台介入。</view>
+          </view>
+        </view>
+        <view class="service-actions">
+          <view class="service-action active-opacity" bindtap="openMerchantService">联系商家</view>
+          <view class="service-action service-action--dark active-opacity" bindtap="openOfficialService">官方客服</view>
+        </view>
+      </view>
+
+      <view class="tips-card">
+        <view class="tips-title">温馨提示</view>
+        <view class="tips-text">退款申请提交后，可在“我的订单 - 售后”中查看处理进度。</view>
+        <view class="tips-text">审核通过后原路退回。</view>
+      </view>
+
+      <view class="bottom-space"></view>
+    </block>
+  </scroll-view>
+
+  <view class="submit-bar" wx:if="{{order && !loading}}">
+    <custom-button
+      type="primary"
+      size="large"
+      block
+      disabled="{{submitting}}"
+      bind:click="submitRefund"
+    >
+      {{submitting ? '提交中...' : '提交退款申请'}}
+    </custom-button>
+  </view>
+</view>
+

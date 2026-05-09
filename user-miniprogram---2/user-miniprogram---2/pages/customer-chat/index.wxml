@@ -1,0 +1,107 @@
+<view class="chat-page">
+  <custom-nav-bar title="{{navTitle}}" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <scroll-view
+    class="chat-scroll"
+    scroll-y
+    scroll-into-view="{{scrollIntoView}}"
+    refresher-enabled
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+  >
+    <view class="loading-wrap" wx:if="{{loading}}">会话加载中...</view>
+
+    <block wx:elif="{{conversation}}">
+      <view class="context-card">
+        <view class="context-head">
+          <text class="context-title">{{conversation.conversationType === 'support' ? '官方客服会话' : '商家协商会话'}}</text>
+          <text class="context-status">{{conversation.status || 'open'}}</text>
+        </view>
+        <view class="context-meta">
+          <text class="meta-chip {{conversation.isEscalated ? 'is-active' : ''}}">
+            {{conversation.isEscalated ? '平台已介入' : '可申请平台介入'}}
+          </text>
+          <text class="meta-chip" wx:if="{{conversation.conversationType === 'support' && conversation.status === 'ai_serving'}}">智能接待中</text>
+          <text class="meta-chip is-queue" wx:if="{{conversation.conversationType === 'support' && conversation.status === 'pending_support'}}">
+            {{queueHint || '人工排队中'}}
+          </text>
+          <text class="meta-chip">优先级 {{conversation.priority || 'normal'}}</text>
+        </view>
+
+        <view class="context-link-row" wx:if="{{conversation.context && conversation.context.order}}">
+          <text class="context-link-title">关联订单：{{conversation.context.order.orderNo || ('#' + conversation.context.order.id)}}</text>
+          <view class="context-link-btn active-opacity" bindtap="openOrderDetail">查看订单</view>
+        </view>
+        <view class="context-link-row" wx:if="{{conversation.context && conversation.context.product}}">
+          <text class="context-link-title">关联商品：{{conversation.context.product.name || ('#' + conversation.context.product.id)}}</text>
+          <view class="context-link-btn active-opacity" bindtap="openProductDetail">查看商品</view>
+        </view>
+      </view>
+
+      <view class="message-list">
+        <view
+          class="message-row {{item.isSelf ? 'self' : ''}} {{item.isSystem ? 'system' : ''}}"
+          wx:for="{{messages}}"
+          wx:key="id"
+          id="msg-{{item.id}}"
+        >
+          <view class="message-bubble">
+            <view class="message-meta">{{item.senderName}} · {{item.createTime}}</view>
+            <view class="message-content">{{item.content}}</view>
+          </view>
+        </view>
+
+        <view class="empty-message" wx:if="{{messages.length === 0}}">
+          暂无聊天
+        </view>
+      </view>
+
+      <view style="height: 220rpx;"></view>
+    </block>
+
+    <view class="loading-wrap" wx:else>会话不存在或无权限访问</view>
+  </scroll-view>
+
+  <view class="composer-wrap" wx:if="{{conversation}}">
+    <view class="composer-tools">
+      <view
+        class="tool-btn active-opacity"
+        wx:if="{{conversation.conversationType === 'support' && conversation.status === 'ai_serving'}}"
+        bindtap="requestHumanSupport"
+      >
+        {{requestingHuman ? '提交中...' : '转人工客服'}}
+      </view>
+      <view
+        class="tool-btn disabled"
+        wx:if="{{conversation.conversationType === 'support' && conversation.status === 'pending_support'}}"
+      >
+        {{queueHint || '人工排队中'}}
+      </view>
+      <view
+        class="tool-btn active-opacity"
+        wx:if="{{conversation.conversationType === 'merchant' && !conversation.isEscalated}}"
+        bindtap="handleEscalate"
+      >
+        申请平台介入
+      </view>
+      <view class="tool-btn ghost active-opacity" bindtap="onRefresh">刷新</view>
+    </view>
+
+    <view class="composer-row">
+      <input
+        class="composer-input"
+        placeholder="{{conversation.conversationType === 'support' ? '输入消息，可转人工' : '输入消息'}}"
+        value="{{inputValue}}"
+        bindinput="onInputChange"
+        bindconfirm="sendMessage"
+        confirm-type="send"
+      />
+      <view
+        class="send-btn active-opacity {{inputValue ? 'active' : ''}}"
+        bindtap="sendMessage"
+      >
+        {{sending ? '发送中' : '发送'}}
+      </view>
+    </view>
+  </view>
+</view>

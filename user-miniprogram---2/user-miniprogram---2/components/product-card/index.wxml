@@ -1,0 +1,52 @@
+<view
+  class="product-card hover-scale {{className}}"
+  bindtap="onTap"
+  bindtouchstart="onTouchStart"
+  bindtouchmove="onTouchMove"
+  bindtouchend="onTouchEnd"
+  bindtouchcancel="onTouchCancel"
+>
+  <view class="product-img-wrap {{skeleton ? 'skeleton-bg' : ''}}">
+    <image wx:if="{{!skeleton && displayImage && !imageLoadFailed}}" class="product-img" src="{{displayImage}}" mode="aspectFill" lazy-load="true" binderror="onImageError"></image>
+    <view wx:if="{{!skeleton && (!displayImage || imageLoadFailed)}}" class="product-img product-img-placeholder">
+      <text class="product-img-placeholder-text">暂无图片</text>
+    </view>
+    <view wx:if="{{!skeleton && product.tag}}" class="product-badge">{{product.tag}}</view>
+  </view>
+
+  <view class="product-info">
+    <view class="product-title-wrap">
+      <view class="product-name text-ellipsis-2 {{skeleton ? 'skeleton-bg skeleton-text' : ''}}">{{skeleton ? '' : product.title || product.name}}</view>
+      <view class="product-meta-line text-ellipsis" wx:if="{{!skeleton && (product.extraInfo || product.categoryName || product.salesText)}}">
+        {{product.extraInfo || product.categoryName || product.salesText}}
+      </view>
+      <view class="product-reason text-ellipsis {{skeleton ? 'skeleton-bg skeleton-text-short' : ''}}" wx:if="{{showReason && (product.reason || skeleton)}}">{{skeleton ? '' : product.reason}}</view>
+      <view class="product-reason-tags" wx:if="{{showReason && !skeleton && product.reasonTags && product.reasonTags.length}}">
+        <text class="product-reason-tag" wx:for="{{product.reasonTags}}" wx:key="*this">{{item}}</text>
+      </view>
+      <view class="product-signal-row" wx:if="{{showReason && !skeleton && (product.sourceLabel || product.recommendationToken)}}">
+        <text class="product-source-chip text-ellipsis">{{product.sourceLabel || '推荐追踪'}}</text>
+        <view class="product-explain-btn active-opacity" catchtap="onExplain" catchtouchstart="noop">依据</view>
+      </view>
+    </view>
+
+    <view class="product-bottom">
+      <view class="product-price-wrap">
+        <view class="product-price {{skeleton ? 'skeleton-bg skeleton-text-short' : ''}}">
+          <text class="price-sign" wx:if="{{!skeleton}}">¥</text>
+          <text class="price-num" wx:if="{{!skeleton}}">{{product.price}}</text>
+        </view>
+        <view class="product-sales" wx:if="{{showSales && !skeleton && product.salesText && product.salesText !== '0'}}">已售 {{product.salesText}}</view>
+      </view>
+
+      <view class="product-actions" wx:if="{{!skeleton && (showDislike || showAddCart)}}">
+        <view class="product-dislike-btn active-opacity" catchtap="onDislike" catchtouchstart="noop" wx:if="{{showDislike}}">
+          <view class="more-icon"></view>
+        </view>
+        <view class="product-add-btn product-add-btn--{{actionMode}} active-opacity" catchtap="onAddCart" catchtouchstart="noop" wx:if="{{showAddCart}}">
+          <view class="{{actionMode === 'seckill' ? 'seckill-icon' : 'plus-icon'}}"></view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,16 @@
+<view class="tab-bar-wrap">
+  <view class="tab-bar-ambient"></view>
+  <view class="tab-bar-ambient tab-bar-ambient-cyan"></view>
+  <view class="tab-bar glass-panel">
+    <view wx:for="{{list}}" wx:key="index" class="tab-bar-item {{selected === index ? 'active' : ''}}" data-path="{{item.pagePath}}" data-index="{{index}}" bindtap="switchTab">
+      <view class="tab-item-active-bg" wx:if="{{selected === index}}"></view>
+      <view class="tab-bar-icon-wrap">
+        <view class="tab-icon {{item.iconClass}}"></view>
+        <view class="tab-bar-badge-count" wx:if="{{item.badgeCount > 0}}">{{item.badgeText}}</view>
+        <view class="tab-bar-badge-dot" wx:if="{{item.showBadge && !(item.badgeCount > 0)}}"></view>
+        <view class="tab-bar-dot" wx:if="{{selected === index}}"></view>
+      </view>
+      <view class="tab-bar-text">{{item.text}}</view>
+    </view>
+  </view>
+</view>

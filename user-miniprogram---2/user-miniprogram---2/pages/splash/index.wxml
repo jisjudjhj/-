@@ -1,0 +1,16 @@
+<view class="splash-page">
+  <view class="splash-container">
+    <view class="logo-wrapper">
+      <view class="logo-box">
+        <text class="logo-text">优</text>
+      </view>
+      <view class="brand-name">数智优购</view>
+    </view>
+    
+    <view class="loading-indicator">
+      <view class="loading-dot"></view>
+      <view class="loading-dot"></view>
+      <view class="loading-dot"></view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.ProductMapper">
+
+    <resultMap id="ProductResultMap" type="com.ecommerce.entity.Product">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="description" property="description"/>
+        <result column="price" property="price"/>
+        <result column="original_price" property="originalPrice"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="merchant_id" property="merchantId"/>
+        <result column="image" property="image"/>
+        <result column="images" property="images" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="tags" property="tags" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="stock" property="stock"/>
+        <result column="sales_count" property="salesCount"/>
+        <result column="rating" property="rating"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="category_name" property="categoryName"/>
+        <result column="merchant_name" property="merchantName"/>
+    </resultMap>
+
+    <sql id="excludeSeckillShelfCondition">
+        AND NOT EXISTS (
+            SELECT 1
+            FROM seckill_activity_apply saa
+            JOIN seckill_activity sa ON sa.id = saa.activity_id
+            WHERE saa.product_id = p.id
+              AND saa.audit_status = 1
+              AND sa.publish_status = 1
+              AND sa.end_time > CURRENT_TIMESTAMP
+        )
+    </sql>
+
+    <select id="selectHotProducts" resultMap="ProductResultMap">
+        SELECT p.*, c.name AS category_name
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.id
+        WHERE p.deleted = 0 AND p.status = 1
+        <include refid="excludeSeckillShelfCondition"/>
+        ORDER BY p.sales_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectRandomByCategory" resultMap="ProductResultMap">
+        SELECT p.*, c.name AS category_name
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.id
+        WHERE p.deleted = 0 AND p.status = 1
+          AND p.category_id = #{categoryId}
+        <include refid="excludeSeckillShelfCondition"/>
+          AND p.id &gt;= COALESCE((
+              SELECT FLOOR(MIN(seed_p.id) + RAND() * GREATEST(MAX(seed_p.id) - MIN(seed_p.id), 1))
+              FROM product seed_p
+              WHERE seed_p.deleted = 0
+                AND seed_p.status = 1
+                AND seed_p.category_id = #{categoryId}
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM seckill_activity_apply saa
+                    JOIN seckill_activity sa ON sa.id = saa.activity_id
+                    WHERE saa.product_id = seed_p.id
+                      AND saa.audit_status = 1
+                      AND sa.publish_status = 1
+                      AND sa.end_time > CURRENT_TIMESTAMP
+                )
+          ), 0)
+        ORDER BY p.id ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectAllCategoryIds" resultType="java.util.Map">
+        SELECT DISTINCT c.id AS categoryId, c.name AS categoryName, c.sort_order AS sortOrder
+        FROM category c
+        INNER JOIN product p ON c.id = p.category_id AND p.deleted = 0 AND p.status = 1
+            AND NOT EXISTS (
+                SELECT 1
+                FROM seckill_activity_apply saa
+                JOIN seckill_activity sa ON sa.id = saa.activity_id
+                WHERE saa.product_id = p.id
+                  AND saa.audit_status = 1
+                  AND sa.publish_status = 1
+                  AND sa.end_time > CURRENT_TIMESTAMP
+            )
+        ORDER BY c.sort_order
+    </select>
+
+    <select id="selectByIds" resultMap="ProductResultMap">
+        SELECT p.*, c.name AS category_name
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.id
+        WHERE p.deleted = 0
+        AND p.id IN
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </select>
+
+    <select id="selectMerchantProductStats" resultType="java.util.Map">
+        SELECT COUNT(*) AS totalProducts,
+               IFNULL(SUM(CASE WHEN status = 1 THEN 1 ELSE 0 END), 0) AS onShelfCount,
+               IFNULL(SUM(CASE WHEN status = 0 THEN 1 ELSE 0 END), 0) AS offShelfCount,
+               IFNULL(SUM(CASE WHEN stock IS NOT NULL AND stock &lt;= #{lowStockThreshold} THEN 1 ELSE 0 END), 0) AS lowStockCount,
+               IFNULL(SUM(sales_count), 0) AS totalSales,
+               IFNULL(SUM(sales_count * price), 0) AS estimatedRevenue
+        FROM product
+        WHERE deleted = 0
+          AND merchant_id = #{merchantId}
+    </select>
+
+    <select id="selectMerchantTopProducts" resultMap="ProductResultMap">
+        SELECT p.*, c.name AS category_name
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.id
+        WHERE p.deleted = 0
+          AND p.merchant_id = #{merchantId}
+        ORDER BY p.sales_count DESC, p.update_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectMerchantCategorySalesStats" resultType="java.util.Map">
+        SELECT IFNULL(c.id, 0) AS categoryId,
+               IFNULL(c.name, '未分类') AS categoryName,
+               COUNT(p.id) AS productCount,
+               IFNULL(SUM(p.sales_count), 0) AS totalSales,
+               IFNULL(SUM(p.sales_count * p.price), 0) AS totalRevenue
+        FROM product p
+        LEFT JOIN category c ON p.category_id = c.id
+        WHERE p.deleted = 0
+          AND p.merchant_id = #{merchantId}
+        GROUP BY c.id, c.name
+        ORDER BY totalSales DESC, productCount DESC
+    </select>
+
+    <update id="deductStock">
+        UPDATE product SET stock = stock - #{quantity}, sales_count = sales_count + #{quantity}
+        WHERE id = #{id} AND stock >= #{quantity} AND deleted = 0
+    </update>
+
+    <update id="restoreStock">
+        UPDATE product SET stock = stock + #{quantity},
+               sales_count = GREATEST(0, sales_count - #{quantity})
+        WHERE id = #{id} AND deleted = 0
+    </update>
+
+    <select id="selectCategorySalesStats" resultType="java.util.Map">
+        SELECT c.id AS category_id, c.name AS category_name,
+               COUNT(p.id) AS product_count,
+               IFNULL(SUM(p.sales_count), 0) AS total_sales,
+               IFNULL(SUM(p.sales_count * p.price), 0) AS total_revenue
+        FROM category c
+        LEFT JOIN product p ON c.id = p.category_id AND p.deleted = 0
+        GROUP BY c.id, c.name
+        ORDER BY total_sales DESC
+    </select>
+
+    <sql id="searchFilterCondition">
+        WHERE p.deleted = 0
+          AND p.status = 1
+          AND NOT EXISTS (
+              SELECT 1
+              FROM seckill_activity_apply saa
+              JOIN seckill_activity sa ON sa.id = saa.activity_id
+              WHERE saa.product_id = p.id
+                AND saa.audit_status = 1
+                AND sa.publish_status = 1
+                AND sa.end_time > CURRENT_TIMESTAMP
+          )
+        <if test="categoryId != null">
+            AND p.category_id = #{categoryId}
+        </if>
+        <if test="keywordParts != null and keywordParts.size() > 0">
+            <foreach collection="keywordParts" item="part">
+                <if test="part != null and part != ''">
+                    AND (
+                        p.name LIKE CONCAT('%', #{part}, '%')
+                        OR p.description LIKE CONCAT('%', #{part}, '%')
+                        OR JSON_CONTAINS(p.tags, CONCAT('\"', #{part}, '\"'))
+                    )
+                </if>
+            </foreach>
+        </if>
+        <if test="minPrice != null">
+            AND p.price <![CDATA[ >= ]]> #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            AND p.price <![CDATA[ <= ]]> #{maxPrice}
+        </if>
+    </sql>
+
+    <select id="selectSearchCategoryBuckets" resultType="java.util.Map">
+        SELECT
+            p.category_id AS categoryId,
+            COALESCE(c.name, '未分类') AS categoryName,
+            COUNT(*) AS count
+        FROM product p
+        LEFT JOIN category c ON c.id = p.category_id
+        <include refid="searchFilterCondition"/>
+        GROUP BY p.category_id, c.name
+        ORDER BY count DESC, categoryId ASC
+    </select>
+
+    <select id="selectSearchPriceBucketSummary" resultType="java.util.Map">
+        SELECT
+            SUM(CASE WHEN p.price <![CDATA[ < ]]> 100 THEN 1 ELSE 0 END) AS bucket0_99,
+            SUM(CASE WHEN p.price <![CDATA[ >= ]]> 100 AND p.price <![CDATA[ < ]]> 300 THEN 1 ELSE 0 END) AS bucket100_299,
+            SUM(CASE WHEN p.price <![CDATA[ >= ]]> 300 AND p.price <![CDATA[ < ]]> 1000 THEN 1 ELSE 0 END) AS bucket300_999,
+            SUM(CASE WHEN p.price <![CDATA[ >= ]]> 1000 AND p.price <![CDATA[ < ]]> 3000 THEN 1 ELSE 0 END) AS bucket1000_2999,
+            SUM(CASE WHEN p.price <![CDATA[ >= ]]> 3000 THEN 1 ELSE 0 END) AS bucket3000_plus,
+            COUNT(*) AS totalMatched
+        FROM product p
+        <include refid="searchFilterCondition"/>
+    </select>
+
+    <select id="selectSearchCorrectionProductNames" resultType="java.lang.String">
+        SELECT name
+        FROM product
+        WHERE deleted = 0
+          AND status = 1
+          AND NOT EXISTS (
+              SELECT 1
+              FROM seckill_activity_apply saa
+              JOIN seckill_activity sa ON sa.id = saa.activity_id
+              WHERE saa.product_id = product.id
+                AND saa.audit_status = 1
+                AND sa.publish_status = 1
+                AND sa.end_time > CURRENT_TIMESTAMP
+          )
+          AND name IS NOT NULL
+          AND name != ''
+        ORDER BY sales_count DESC, rating DESC, id DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectSearchCorrectionCategoryNames" resultType="java.lang.String">
+        SELECT name
+        FROM category
+        WHERE name IS NOT NULL
+          AND name != ''
+        ORDER BY sort_order ASC, id ASC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectSearchCorrectionTagTerms" resultType="java.lang.String">
+        SELECT DISTINCT jt.tag
+        FROM product p
+        JOIN JSON_TABLE(
+            p.tags,
+            '$[*]' COLUMNS (
+                tag VARCHAR(100) PATH '$'
+            )
+        ) jt
+        WHERE p.deleted = 0
+          AND p.status = 1
+          AND NOT EXISTS (
+              SELECT 1
+              FROM seckill_activity_apply saa
+              JOIN seckill_activity sa ON sa.id = saa.activity_id
+              WHERE saa.product_id = p.id
+                AND saa.audit_status = 1
+                AND sa.publish_status = 1
+                AND sa.end_time > CURRENT_TIMESTAMP
+          )
+          AND jt.tag IS NOT NULL
+          AND jt.tag != ''
+        ORDER BY jt.tag ASC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

@@ -1,0 +1,99 @@
+<view class="page">
+<custom-nav-bar title="消息中心" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <view class="hero">
+    <view class="hero-main">
+      <text class="hero-kicker">消息概览</text>
+      <text class="hero-title">{{unreadMessageCount > 0 ? '你有新的待处理通知' : '消息已全部同步'}}</text>
+    </view>
+    <view class="hero-action {{unreadMessageCount <= 0 ? 'disabled' : ''}}" bindtap="markAllRead">全部已读</view>
+  </view>
+
+  <view class="tab-strip">
+    <view
+      class="tab-chip {{activeType === item.value ? 'active' : ''}}"
+      wx:for="{{typeTabs}}"
+      wx:key="value"
+      data-type="{{item.value}}"
+      bindtap="switchType"
+    >
+      <text class="tab-chip-text">{{item.label}}</text>
+      <view class="tab-chip-badge" wx:if="{{item.badgeCount > 0}}">
+        {{item.badgeCount > 99 ? '99+' : item.badgeCount}}
+      </view>
+    </view>
+  </view>
+
+  <scroll-view
+    class="scroll"
+    scroll-y
+    refresher-enabled
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+    bindscrolltolower="onReachBottom"
+    lower-threshold="120"
+  >
+    <view class="skeleton-list" wx:if="{{loading}}">
+      <view class="skeleton-card skeleton-bg" wx:for="{{skeletonList}}" wx:key="*this"></view>
+    </view>
+
+    <view class="list" wx:elif="{{messages.length > 0}}">
+      <view
+        class="card {{item.isRead ? 'read' : 'unread'}}"
+        wx:for="{{messages}}"
+        wx:key="id"
+        data-id="{{item.id}}"
+        bindtap="handleMessageTap"
+      >
+        <view class="card-head">
+          <view class="card-title-wrap">
+            <view class="dot" wx:if="{{!item.isRead}}"></view>
+            <text class="card-title text-ellipsis">{{item.title}}</text>
+          </view>
+          <text class="card-time">{{item.createTimeText}}</text>
+        </view>
+
+        <view class="card-meta">
+          <text class="tag {{item.typeClass}}">{{item.typeText}}</text>
+          <text class="status">{{item.isRead ? '已读' : '未读'}}</text>
+        </view>
+
+        <text class="card-content text-ellipsis-2">{{item.content}}</text>
+
+        <view class="card-actions">
+          <view
+            class="action primary"
+            wx:if="{{item.primaryUrl}}"
+            catchtap="handleQuickNavigate"
+            data-id="{{item.id}}"
+            data-url="{{item.primaryUrl}}"
+          >
+            {{item.primaryActionText}}
+          </view>
+          <view
+            class="action"
+            wx:if="{{item.secondaryUrl}}"
+            catchtap="handleQuickNavigate"
+            data-id="{{item.id}}"
+            data-url="{{item.secondaryUrl}}"
+          >
+            {{item.secondaryActionText}}
+          </view>
+        </view>
+      </view>
+
+      <view class="list-state" wx:if="{{loadingMore}}">加载中...</view>
+      <view class="list-state done" wx:elif="{{!hasMore}}">没有更多消息了</view>
+    </view>
+
+    <view class="empty" wx:else>
+      <view class="empty-icon"></view>
+      <view class="empty-title">{{activeType ? '暂无消息' : '暂无消息'}}</view>
+      <view class="empty-desc" wx:if="{{activeType}}">切换分类查看</view>
+      <view class="empty-desc" wx:else>系统通知、订单进度和活动提醒都会显示在这里</view>
+    </view>
+
+    <view style="height: 48rpx;"></view>
+  </scroll-view>
+</view>
+

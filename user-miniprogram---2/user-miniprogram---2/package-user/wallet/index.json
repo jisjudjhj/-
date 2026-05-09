@@ -1,0 +1,8 @@
+{
+  "navigationStyle": "custom",
+  "usingComponents": {
+    "custom-nav-bar": "/components/custom-nav-bar/index",
+    "custom-button": "/components/custom-button/index",
+    "custom-popup": "/components/custom-popup/index"
+  }
+}

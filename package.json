@@ -1,0 +1,20 @@
+{
+  "name": "bigdata-ecommerce-system",
+  "version": "0.1.0",
+  "scripts": {
+    "bootstrap": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/bootstrap.ps1",
+    "smoke": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/smoke.ps1",
+    "analytics:run": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/run-python-analytics.ps1",
+    "audit:mini": "powershell -NoProfile -ExecutionPolicy Bypass -File ./scripts/audit-mini-transaction-recommendation.ps1",
+    "seckill:test": "python ./scripts/seckill_concurrency_test.py",
+    "register:load-test": "node ./scripts/register_load_test.js"
+  },
+  "engines": {
+    "node": ">=16"
+  },
+  "dependencies": {
+    "ali-oss": "^6.23.0",
+    "playwright": "^1.59.1",
+    "sharp": "^0.34.5"
+  }
+}

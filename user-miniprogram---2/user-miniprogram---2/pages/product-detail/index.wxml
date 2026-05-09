@@ -1,0 +1,486 @@
+<view class="conversion-page bg-gradient-primary">
+  <custom-nav-bar
+    title="{{product ? product.title : ''}}"
+    color="{{navColor}}"
+    showBack="{{true}}"
+    isScrolled="{{isScrolled}}"
+    transparentTitle="{{true}}"
+  ></custom-nav-bar>
+
+  <view class="stage-media glass-card" wx:if="{{product}}" style="position: relative; margin: 20rpx; border-radius: 48rpx; overflow: hidden;">
+    <view class="glass-overlay-top"></view>
+    <swiper class="stage-swiper" bindchange="onGalleryChange" circular autoplay interval="4200" duration="650">
+      <swiper-item wx:for="{{product.images}}" wx:key="*this">
+        <image class="stage-image" src="{{item}}" mode="aspectFill"></image>
+      </swiper-item>
+    </swiper>
+    <view class="stage-mask"></view>
+    <view class="stage-topline">
+      <view class="badge-rose">
+        <view class="badge-dot"></view>
+        <text>{{seckill ? '限时抢购' : '爆款单品'}}</text>
+      </view>
+      <view class="stage-actions">
+        <button
+          class="stage-share-btn active-opacity"
+          open-type="share"
+          hover-class="none"
+          data-product-id="{{product.id}}"
+          data-product-title="{{product.title}}"
+          data-product-image="{{product.images[currentImageIndex] || product.images[0]}}"
+        >
+          <view class="stage-share-icon"></view>
+        </button>
+        <view class="stage-indicator glass-card-soft" style="padding: 8rpx 16rpx; border-radius: 999rpx;">
+          <text class="stage-current">{{currentImageIndex + 1}}</text>
+          <text class="stage-total">/{{product.images.length}}</text>
+        </view>
+      </view>
+    </view>
+    <view class="stage-seckill glass-card" wx:if="{{seckill}}" style="position: absolute; bottom: 20rpx; left: 20rpx; right: 20rpx; padding: 24rpx; border-radius: 28rpx;">
+      <view class="stage-seckill-left">
+        <view class="badge-rose" style="margin-bottom: 12rpx;">
+          <view class="badge-dot"></view>
+          <text>{{seckill.statusLabel}}</text>
+        </view>
+        <view class="stage-seckill-price">
+          <text class="stage-symbol">¥</text>
+          <text class="stage-value">{{seckill.seckillPrice}}</text>
+          <text class="stage-origin">¥{{seckill.originalPrice}}</text>
+        </view>
+      </view>
+      <view class="stage-seckill-right">
+        <text class="stage-countdown">{{seckillCountdownText}}</text>
+        <text class="stage-meta">限购 {{seckill.limitPerUser}} · 余量 {{seckill.stock}}</text>
+      </view>
+    </view>
+  </view>
+
+  <scroll-view
+    class="main-scroll"
+    scroll-y
+    scroll-into-view="{{scrollIntoView}}"
+    bindscroll="onScroll"
+    throttle="{{false}}"
+    refresher-enabled
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+  >
+    <view class="main-spacer"></view>
+
+    <view class="main-panel card-elevated-strong" wx:if="{{product}}" style="margin: 20rpx; padding: 32rpx; position: relative;">
+      <view class="commerce-tabs">
+        <view class="commerce-tab {{activeCommerceTab === 'goods' ? 'commerce-tab-active' : ''}} active-opacity" bindtap="onCommerceTabTap" data-tab="goods">商品</view>
+        <view class="commerce-tab {{activeCommerceTab === 'review' ? 'commerce-tab-active' : ''}} active-opacity" bindtap="onCommerceTabTap" data-tab="review">评价</view>
+        <view class="commerce-tab {{activeCommerceTab === 'detail' ? 'commerce-tab-active' : ''}} active-opacity" bindtap="onCommerceTabTap" data-tab="detail">详情</view>
+        <view class="commerce-tab {{activeCommerceTab === 'recommend' ? 'commerce-tab-active' : ''}} active-opacity" bindtap="onCommerceTabTap" data-tab="recommend" wx:if="{{similarProducts.length}}">推荐</view>
+      </view>
+
+      <view class="commerce-tab-divider"></view>
+
+      <view class="commerce-content">
+      <view class="price-command" id="section-goods" wx:if="{{activeCommerceTab === 'goods'}}">
+        <view class="price-command-head">
+          <view class="price-stack">
+            <view class="price-row">
+              <text class="price-symbol" style="color: var(--accent-color);">¥</text>
+              <text class="price-main text-brand" style="color: var(--accent-color);">{{product.price}}</text>
+            </view>
+            <view class="price-tags" wx:if="{{product.tags.length}}" style="display: flex; gap: 12rpx; margin-top: 16rpx;">
+              <view class="badge-rose" wx:for="{{product.tags}}" wx:key="*this" style="font-size: 20rpx;">
+                <text>{{item}}</text>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <text class="goods-title text-heading" style="display: block; margin-top: 24rpx;">{{product.title}}</text>
+        <text class="goods-desc text-description" wx:if="{{product.description}}" style="display: block; margin-top: 16rpx;">{{product.description}}</text>
+
+        <view class="recommend-insight-card active-opacity" wx:if="{{recommendationInsight}}" bindtap="openRecommendationSheet">
+          <view class="recommend-insight-head">
+            <view>
+              <text class="recommend-insight-kicker">推荐依据</text>
+              <text class="recommend-insight-title">{{recommendationInsight.sourceLabel}}</text>
+            </view>
+            <view class="recommend-insight-action">展开</view>
+          </view>
+          <view class="recommend-insight-tags">
+            <text class="recommend-insight-tag" wx:for="{{recommendationInsight.tags}}" wx:key="*this">{{item}}</text>
+          </view>
+          <text class="recommend-insight-reason text-ellipsis-2">{{recommendationInsight.reason}}</text>
+        </view>
+
+        <view class="state-grid" style="margin-top: 32rpx;">
+          <view class="state-item glass-card-soft" style="padding: 20rpx; border-radius: 20rpx; text-align: center;">
+            <text class="state-label text-description" style="display: block; font-size: 22rpx;">库存</text>
+            <text class="state-value text-brand" style="display: block; margin-top: 8rpx; font-size: 36rpx;">{{product.stock}}</text>
+          </view>
+          <view class="state-item">
+            <text class="state-label">销量</text>
+            <text class="state-value">{{product.salesCount || 0}}</text>
+          </view>
+          <view class="state-item">
+            <text class="state-label">评分</text>
+            <text class="state-value">{{product.rating || '暂无'}}</text>
+          </view>
+          <view class="state-item">
+            <text class="state-label">评价</text>
+            <text class="state-value">{{reviewTotal || 0}}</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="decision-board" wx:if="{{activeCommerceTab === 'goods'}}">
+        <view class="decision-board-top">
+          <view>
+            <view class="decision-badge">{{decisionBoard.badge || '快速判断'}}</view>
+            <view class="decision-title">{{decisionBoard.headline || '购买参考'}}</view>
+            <view class="decision-subline" wx:if="{{decisionBoard.subline}}">{{decisionBoard.subline}}</view>
+          </view>
+        </view>
+        <view class="decision-facts" wx:if="{{decisionBoard.facts.length}}">
+          <view class="decision-fact" wx:for="{{decisionBoard.facts}}" wx:key="label">
+            <text class="decision-fact-label">{{item.label}}</text>
+            <text class="decision-fact-value">{{item.value}}</text>
+          </view>
+        </view>
+        <view class="decision-prompts" wx:if="{{decisionBoard.prompts.length}}">
+          <view
+            class="decision-prompt active-opacity"
+            wx:for="{{decisionBoard.prompts}}"
+            wx:key="*this"
+            bindtap="openAiAssistant"
+            data-prompt="{{item}}"
+          >
+            {{item}}
+          </view>
+        </view>
+      </view>
+
+      <view class="section-block ai-block" id="section-review" wx:if="{{activeCommerceTab === 'review'}}">
+        <view class="section-header section-head-row">
+          <view>
+            <view class="section-kicker">用户评价</view>
+            <view class="section-title">真实评论</view>
+          </view>
+          <view class="review-entry-btn active-opacity" bindtap="goToReviewOrders">
+            去评价
+          </view>
+        </view>
+
+        <view class="review-overview">
+          <view class="review-score-card">
+            <text class="review-score-value">{{reviewAverage || (product.rating || '5.0')}}</text>
+            <text class="review-score-unit">/ 5</text>
+          </view>
+          <view class="review-overview-meta">
+            <text class="review-overview-title">{{reviewFilterRating > 0 ? ((reviewFilteredTotal || 0) + ' 条 ' + reviewFilterRating + ' 星评价') : ((reviewTotal || 0) + ' 条评价')}}</text>
+          </view>
+          <view class="ai-summary-btn active-opacity" bindtap="loadAiSummary" wx:if="{{!aiSummary && !aiSummaryLoading}}">
+            <text class="ai-btn-icon">智能</text>
+            速览
+          </view>
+          <view class="loading-inline" wx:if="{{aiSummaryLoading}}">
+            <view class="loading-dot"></view>
+            <text>整理中</text>
+          </view>
+        </view>
+
+        <view class="ai-summary-card" wx:if="{{aiSummary}}">
+          <view class="ai-summary-badge">评价总结</view>
+          <view class="ai-summary-text">{{aiSummary}}</view>
+        </view>
+
+        <view class="review-filter-row" wx:if="{{reviewTotal > 0}}">
+          <view
+            class="review-filter-chip {{reviewFilterRating === item.rating ? 'review-filter-chip-active' : ''}} active-opacity"
+            wx:for="{{reviewFilterOptions}}"
+            wx:key="rating"
+            bindtap="selectReviewFilter"
+            data-rating="{{item.rating}}"
+          >
+            {{item.label}}
+          </view>
+        </view>
+
+        <view class="loading-inline review-load-inline" wx:if="{{reviewLoading && !reviewList.length}}">
+          <view class="loading-dot"></view>
+          <text>加载中</text>
+        </view>
+
+        <view class="review-list" wx:if="{{reviewList.length}}">
+          <view class="review-card" wx:for="{{reviewList}}" wx:for-index="reviewIndex" wx:key="id">
+            <view class="review-card-head">
+              <view class="review-user">
+                <image wx:if="{{item.avatar}}" class="review-avatar" src="{{item.avatar}}" mode="aspectFill"></image>
+                <view wx:else class="review-avatar review-avatar-placeholder">
+                  <text>{{item.usernameInitial}}</text>
+                </view>
+                <view class="review-user-copy">
+                  <text class="review-username">{{item.username}}</text>
+                  <view class="review-meta-line">
+                    <view class="review-stars">
+                      <text class="review-star {{star ? 'review-star-active' : ''}}" wx:for="{{item.stars}}" wx:for-item="star" wx:key="index">{{star ? '★' : '☆'}}</text>
+                    </view>
+                    <text class="review-date">{{item.createTime}}</text>
+                  </view>
+                </view>
+              </view>
+              <view class="review-helpful-btn {{item.helpfulVoted ? 'review-helpful-btn-active' : ''}}" bindtap="toggleReviewHelpful" data-id="{{item.id}}" data-index="{{reviewIndex}}">
+                有用 {{item.helpfulCount || 0}}
+              </view>
+            </view>
+
+            <view class="review-tags" wx:if="{{item.tags.length}}">
+              <text class="review-tag" wx:for="{{item.tags}}" wx:key="*this">{{item}}</text>
+            </view>
+
+            <text class="review-content" wx:if="{{item.content}}">{{item.content}}</text>
+
+            <view class="review-image-grid" wx:if="{{item.images.length}}">
+              <image
+                class="review-image"
+                wx:for="{{item.images}}"
+                wx:for-item="imageUrl"
+                wx:for-index="imageIndex"
+                wx:key="*this"
+                src="{{imageUrl}}"
+                mode="aspectFill"
+                bindtap="previewReviewImage"
+                data-current="{{imageUrl}}"
+                data-review-index="{{reviewIndex}}"
+                data-image-index="{{imageIndex}}"
+                data-group="images"
+              ></image>
+            </view>
+
+            <view class="review-append" wx:if="{{item.appendContent || item.appendImages.length}}">
+              <text class="review-append-label">追评</text>
+              <text class="review-append-content" wx:if="{{item.appendContent}}">{{item.appendContent}}</text>
+              <view class="review-image-grid is-append" wx:if="{{item.appendImages.length}}">
+                <image
+                  class="review-image"
+                  wx:for="{{item.appendImages}}"
+                  wx:for-item="appendImage"
+                  wx:for-index="appendImageIndex"
+                  wx:key="*this"
+                  src="{{appendImage}}"
+                  mode="aspectFill"
+                  bindtap="previewReviewImage"
+                  data-current="{{appendImage}}"
+                  data-review-index="{{reviewIndex}}"
+                  data-image-index="{{appendImageIndex}}"
+                  data-group="appendImages"
+                ></image>
+              </view>
+            </view>
+
+            <view class="review-reply" wx:if="{{item.reply}}">
+              <text class="review-reply-label">商家回复</text>
+              <text class="review-reply-content">{{item.reply}}</text>
+            </view>
+          </view>
+        </view>
+
+        <view class="review-empty" wx:elif="{{!reviewLoading}}">
+          <text class="review-empty-title">暂无评价</text>
+          <text class="review-empty-desc">{{reviewFilterRating > 0 ? '切回全部查看' : '完成订单后可评价'}}</text>
+        </view>
+
+        <view class="review-footer-actions">
+          <view class="ai-quick-grid">
+            <view class="ai-quick-item active-opacity" bindtap="showAiQaPopup">问问 智能</view>
+            <view class="ai-quick-item active-opacity" bindtap="openAiAssistant" data-prompt="{{decisionBoard.prompts[1] || '帮我对比这款商品和相似推荐'}}">对比分析</view>
+          </view>
+          <view class="review-load-more active-opacity" wx:if="{{reviewHasMore && !reviewLoadingMore}}" bindtap="loadMoreReviews">查看更多评价</view>
+          <view class="loading-inline review-load-inline" wx:if="{{reviewLoadingMore}}">
+            <view class="loading-dot"></view>
+            <text>加载中</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="section-block" id="section-detail" wx:if="{{activeCommerceTab === 'detail'}}">
+        <view class="section-header">
+          <view class="section-kicker">商品详情</view>
+          <view class="section-title">图文详情</view>
+          <view class="section-subtitle">图文详情</view>
+        </view>
+        <view class="detail-content">
+          <image wx:for="{{product.details}}" wx:key="*this" src="{{item}}" mode="widthFix" class="detail-image" lazy-load></image>
+        </view>
+      </view>
+
+      <view class="section-block" id="section-recommend" wx:if="{{activeCommerceTab === 'recommend' && similarProducts.length > 0}}">
+        <view class="section-header">
+          <view class="section-kicker">相似推荐</view>
+          <view class="section-title">相似推荐</view>
+          <view class="section-subtitle">同价位备选</view>
+        </view>
+        <view class="similar-grid">
+          <view class="similar-item-wrap" wx:for="{{similarProducts}}" wx:key="id">
+            <product-card
+              product="{{item}}"
+              className="detail-similar-card"
+              showReason="{{true}}"
+              bind:click="goToSimilarProduct"
+            ></product-card>
+          </view>
+        </view>
+      </view>
+      </view>
+
+      <view class="page-bottom-spacer page-bottom-spacer--detail"></view>
+    </view>
+
+    <view class="main-panel empty-panel" wx:else>
+      <view class="detail-title text-h3">商品不存在或已下架</view>
+    </view>
+  </scroll-view>
+
+  <custom-popup show="{{showAiQa}}" position="bottom" round closeable bind:close="hideAiQaPopup">
+    <view class="ai-qa-popup">
+      <view class="ai-qa-title">问 智能：这件商品值得买吗？</view>
+      <view class="ai-qa-quick-tags">
+        <view class="ai-qa-tag" bindtap="askAiQuick" data-q="这件商品的质量和做工怎么样？">质量如何</view>
+        <view class="ai-qa-tag" bindtap="askAiQuick" data-q="这件商品的性价比高吗？">性价比</view>
+        <view class="ai-qa-tag" bindtap="askAiQuick" data-q="这件商品有哪些需要注意的缺点？">注意事项</view>
+      </view>
+      <view class="ai-qa-input-row">
+        <input class="ai-qa-input" placeholder="输入你想问的商品问题..." value="{{aiQaInput}}" bindinput="onAiQaInput" bindconfirm="askAi" confirm-type="send" disabled="{{aiQaLoading}}" />
+        <view class="ai-qa-send {{aiQaInput ? 'ai-qa-send-active' : ''}}" bindtap="askAi">发送</view>
+      </view>
+      <view class="loading-inline" wx:if="{{aiQaLoading}}">
+        <view class="loading-dot"></view>
+        <text>正在整理...</text>
+      </view>
+      <view class="ai-qa-answer" wx:if="{{aiQaAnswer}}">
+        <view class="ai-qa-answer-badge">回答</view>
+        <text class="ai-qa-answer-text">{{aiQaAnswer}}</text>
+      </view>
+    </view>
+  </custom-popup>
+
+  <custom-popup show="{{showRecommendationSheet}}" position="bottom" round closeable bind:close="closeRecommendationSheet">
+    <view class="recommend-sheet" wx:if="{{recommendationInsight}}">
+      <view class="recommend-sheet-badge">推荐链路</view>
+      <view class="recommend-sheet-title">排序依据</view>
+      <view class="recommend-sheet-source">
+        <text>{{recommendationInsight.sourceLabel}}</text>
+        <text>Token {{recommendationInsight.tokenText}}</text>
+      </view>
+      <view class="recommend-sheet-reason">{{recommendationInsight.reason}}</view>
+      <view class="recommend-sheet-tags">
+        <view class="recommend-sheet-tag" wx:for="{{recommendationInsight.tags}}" wx:key="*this">{{item}}</view>
+      </view>
+      <view class="recommend-sheet-grid">
+        <view class="recommend-sheet-dim" wx:for="{{recommendationInsight.dimensions}}" wx:key="label">
+          <text class="recommend-sheet-dim-label">{{item.label}}</text>
+          <text class="recommend-sheet-dim-value text-ellipsis">{{item.value}}</text>
+        </view>
+      </view>
+      <view class="recommend-sheet-note">view、cart、purchase 会继续回流到 user-item 矩阵和 Top-N 排序。</view>
+    </view>
+  </custom-popup>
+
+  <view class="cta-wrap">
+    <view class="cta-bar">
+      <view class="cta-icons">
+        <view class="cta-icon active-opacity {{isFavorite ? 'is-active' : ''}}" bindtap="toggleFavorite">
+          <view class="icon-heart"></view>
+          <text class="cta-icon-text">收藏</text>
+        </view>
+        <view class="cta-icon active-opacity" bindtap="openServiceAction">
+          <view class="icon-service"></view>
+          <text class="cta-icon-text">客服</text>
+        </view>
+        <view class="cta-icon active-opacity" bindtap="goToCart">
+          <view class="icon-cart"></view>
+          <text class="cta-icon-text">购物车</text>
+        </view>
+      </view>
+      <view class="cta-buttons" wx:if="{{product && seckill && seckill.status === 3}}">
+        <view class="btn-disabled glass-card-soft">已售罄</view>
+      </view>
+      <view class="cta-buttons" wx:elif="{{product && product.stock > 0}}">
+        <block wx:if="{{seckill && seckill.status === 1 && seckill.stock > 0}}">
+          <view class="btn-buy btn-primary-gradient hover-scale" bindtap="openSkuPopup" data-mode="seckill">立即秒杀</view>
+        </block>
+        <block wx:elif="{{seckill && seckill.status === 0}}">
+          <view class="btn-buy glass-card-soft hover-scale" bindtap="openSkuPopup" data-mode="seckill">即将开始</view>
+        </block>
+        <block wx:else>
+          <view class="btn-cart glass-card-soft hover-scale" bindtap="openSkuPopup" data-mode="cart">加入购物车</view>
+          <view class="btn-buy btn-primary-gradient hover-scale" bindtap="openSkuPopup" data-mode="buy">立即购买</view>
+        </block>
+      </view>
+      <view class="cta-buttons" wx:elif="{{product && seckill && seckill.status === 0}}">
+        <view class="btn-disabled glass-card-soft">即将开始</view>
+      </view>
+      <view class="cta-buttons" wx:elif="{{product}}">
+        <view class="btn-disabled glass-card-soft">暂时缺货</view>
+      </view>
+    </view>
+  </view>
+
+  <custom-popup show="{{showSkuPopup}}" position="bottom" round closeable bind:close="closeSkuPopup">
+    <view class="sku-popup">
+      <view class="sku-header">
+        <image class="sku-img" src="{{product.images[0] || product.image}}" mode="aspectFill"></image>
+        <view class="sku-info">
+          <view class="sku-topline">
+            <view class="sku-badge">{{buyMode === 'seckill' ? '秒杀下单' : '下单确认'}}</view>
+            <view class="sku-caption">{{buyMode === 'buy' ? '立即购买' : (buyMode === 'cart' ? '加入购物车' : '限时抢购')}}</view>
+          </view>
+          <view class="sku-price-line">
+            <text class="sku-price-symbol">¥</text>
+            <text class="sku-price-value">{{buyMode === 'seckill' && seckill ? seckill.seckillPrice : product.price}}</text>
+          </view>
+          <view class="sku-meta-list">
+            <view class="sku-meta-item">库存 {{buyMode === 'seckill' && seckill ? seckill.stock : product.stock}} 件</view>
+            <view class="sku-meta-item">已选 默认规格</view>
+          </view>
+          <view class="sku-seckill-tip" wx:if="{{buyMode === 'seckill' && seckill}}">
+            秒杀限购 {{seckill.limitPerUser}} 件，活动价不叠加优惠券
+          </view>
+          <view class="sku-recommend-tip" wx:elif="{{recommendationInsight}}">
+            {{recommendationInsight.sourceLabel}} · 下单后回流矩阵
+          </view>
+        </view>
+      </view>
+
+      <scroll-view scroll-y class="sku-body">
+        <view class="sku-section sku-group">
+          <view class="sku-section-head">
+            <view class="sku-title">规格</view>
+            <view class="sku-caption">当前仅支持默认规格</view>
+          </view>
+          <view class="sku-list">
+            <view class="sku-item active">默认规格</view>
+          </view>
+        </view>
+
+        <view class="sku-section sku-quantity-wrap">
+          <view class="sku-quantity-copy">
+            <view class="sku-title">购买数量</view>
+            <view class="sku-caption">可直接调整下单件数</view>
+          </view>
+          <view class="stepper">
+            <view class="stepper-btn {{skuQuantity <= 1 ? 'disabled' : ''}}" bindtap="decreaseQuantity">-</view>
+            <input class="stepper-input" type="number" value="{{skuQuantity}}" bindinput="onQuantityChange" />
+            <view class="stepper-btn {{skuQuantity >= (buyMode === 'seckill' && seckill ? ((seckill.limitPerUser > 0 && seckill.limitPerUser < seckill.stock) ? seckill.limitPerUser : seckill.stock) : product.stock) ? 'disabled' : ''}}" bindtap="increaseQuantity">+</view>
+          </view>
+        </view>
+      </scroll-view>
+
+      <view class="sku-footer">
+        <view class="sku-footer-tip">确认规格与数量后继续</view>
+        <view class="sku-confirm-btn hover-scale" bindtap="confirmSku">{{buyMode === 'seckill' ? '立即秒杀' : '确定'}}</view>
+      </view>
+    </view>
+  </custom-popup>
+</view>
+
+<cart-parabola id="cartParabola"></cart-parabola>
+

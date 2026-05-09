@@ -1,0 +1,165 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: ecommerce-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - /opt/ecommerce/redis-data:/data
+
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    container_name: ecommerce-rabbitmq
+    profiles: ["mq"]
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    volumes:
+      - /opt/ecommerce/rabbitmq-data:/var/lib/rabbitmq
+
+  admin-frontend:
+    image: nginx:1.27-alpine
+    container_name: ecommerce-admin-frontend
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8088:80"
+    volumes:
+      - /opt/ecommerce/admin-dist:/usr/share/nginx/html:ro
+      - /opt/ecommerce/nginx.default.conf:/etc/nginx/conf.d/default.conf:ro
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.3
+    container_name: ecommerce-zookeeper
+    profiles: ["streaming"]
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "127.0.0.1:2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.3
+    container_name: ecommerce-kafka
+    profiles: ["streaming"]
+    restart: unless-stopped
+    depends_on:
+      - zookeeper
+    ports:
+      - "127.0.0.1:9092:9092"
+      - "127.0.0.1:29092:29092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://${SERVER_IP:-127.0.0.1}:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx512m"
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: ecommerce-kafka-ui
+    profiles: ["streaming"]
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    ports:
+      - "127.0.0.1:8090:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: ecommerce-server
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+
+  connect:
+    image: debezium/connect:2.5
+    container_name: ecommerce-debezium-connect
+    profiles: ["streaming"]
+    restart: unless-stopped
+    depends_on:
+      - kafka
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:8083:8083"
+    environment:
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: debezium_connect_configs
+      OFFSET_STORAGE_TOPIC: debezium_connect_offsets
+      STATUS_STORAGE_TOPIC: debezium_connect_statuses
+      CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      STATUS_STORAGE_REPLICATION_FACTOR: 1
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+
+  jobmanager:
+    image: flink:1.18.1-scala_2.12-java11
+    container_name: ecommerce-flink-jobmanager
+    profiles: ["streaming"]
+    restart: unless-stopped
+    command: jobmanager
+    ports:
+      - "127.0.0.1:8081:8081"
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        jobmanager.memory.process.size: 384m
+
+  taskmanager:
+    image: flink:1.18.1-scala_2.12-java11
+    container_name: ecommerce-flink-taskmanager
+    profiles: ["streaming"]
+    restart: unless-stopped
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    environment:
+      FLINK_PROPERTIES: |
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2
+        taskmanager.memory.process.size: 512m
+
+  python-tools:
+    image: python:3.11-slim
+    container_name: ecommerce-python-analytics
+    profiles: ["python"]
+    restart: unless-stopped
+    network_mode: host
+    working_dir: /workspace/backend/python_analytics
+    environment:
+      HOST: 0.0.0.0
+      PORT: 8090
+      PIP_INDEX_URL: https://mirrors.aliyun.com/pypi/simple/
+      PIP_TRUSTED_HOST: mirrors.aliyun.com
+      PIP_DEFAULT_TIMEOUT: 120
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USERNAME: ${DB_USERNAME}
+      DB_PASSWORD: ${DB_PASSWORD}
+      ANALYTICS_DB_HOST: 127.0.0.1
+      ANALYTICS_DB_PORT: 3306
+      ANALYTICS_DB_NAME: ${DB_NAME}
+      ANALYTICS_DB_USERNAME: ${DB_USERNAME}
+      ANALYTICS_DB_PASSWORD: ${DB_PASSWORD}
+    command: >
+      sh -c "python -m venv /workspace/.python-analytics-venv
+      && /workspace/.python-analytics-venv/bin/pip install --upgrade pip setuptools wheel
+      && /workspace/.python-analytics-venv/bin/pip install --progress-bar off -r requirements.txt
+      && exec /workspace/.python-analytics-venv/bin/python api_service.py"
+    volumes:
+      - /opt/ecommerce:/workspace

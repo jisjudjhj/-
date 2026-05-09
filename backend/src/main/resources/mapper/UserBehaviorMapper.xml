@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.UserBehaviorMapper">
+
+    <select id="selectSimilarUsers" resultType="java.lang.Long">
+        SELECT candidate.user_id
+        FROM (
+            SELECT product_id,
+                   MAX(CASE WHEN behavior_type='purchase' THEN 8.0
+                            WHEN behavior_type='favorite' THEN 3.0
+                            WHEN behavior_type='cart' THEN 2.0
+                            WHEN behavior_type='search' THEN 2.0
+                            WHEN behavior_type='view' THEN 1.0
+                            ELSE 0 END) AS intent_weight
+            FROM user_behavior
+            WHERE user_id = #{userId}
+              AND product_id IS NOT NULL
+            GROUP BY product_id
+        ) target
+        JOIN (
+            SELECT user_id, product_id,
+                   MAX(CASE WHEN behavior_type='purchase' THEN 8.0
+                            WHEN behavior_type='favorite' THEN 3.0
+                            WHEN behavior_type='cart' THEN 2.0
+                            WHEN behavior_type='search' THEN 2.0
+                            WHEN behavior_type='view' THEN 1.0
+                            ELSE 0 END) AS intent_weight
+            FROM user_behavior
+            WHERE product_id IS NOT NULL
+              AND user_id != #{userId}
+            GROUP BY user_id, product_id
+        ) candidate
+          ON target.product_id = candidate.product_id
+        GROUP BY candidate.user_id
+        ORDER BY SUM(LEAST(target.intent_weight, candidate.intent_weight)) DESC,
+                 SUM(candidate.intent_weight) DESC,
+                 COUNT(*) DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectRecommendedProductIds" resultType="java.lang.Long">
+        SELECT DISTINCT ub.product_id
+        FROM user_behavior ub
+        WHERE ub.user_id IN
+        <foreach collection="userIds" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+        AND ub.product_id IS NOT NULL
+        AND ub.product_id NOT IN (
+            SELECT product_id FROM user_behavior WHERE user_id = #{currentUserId} AND product_id IS NOT NULL
+        )
+        GROUP BY ub.product_id
+        ORDER BY SUM(CASE WHEN ub.behavior_type='purchase' THEN 8.0
+                          WHEN ub.behavior_type='favorite' THEN 3.0
+                          WHEN ub.behavior_type='cart' THEN 2.0
+                          WHEN ub.behavior_type='search' THEN 2.0
+                          WHEN ub.behavior_type='view' THEN 1.0
+                          ELSE 0 END) DESC,
+                 COUNT(*) DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectUserProductScores" resultType="java.util.Map">
+        SELECT product_id, COUNT(*) as score,
+               SUM(CASE WHEN behavior_type='purchase' THEN 8.0
+                        WHEN behavior_type='favorite' THEN 3.0
+                        WHEN behavior_type='cart' THEN 2.0
+                        WHEN behavior_type='search' THEN 2.0
+                        WHEN behavior_type='view' THEN 1.0
+                        ELSE 0 END) as weighted_score
+        FROM user_behavior
+        WHERE user_id = #{userId} AND product_id IS NOT NULL
+        GROUP BY product_id
+        ORDER BY weighted_score DESC
+    </select>
+
+    <select id="selectUserProductScoresWithDecay" resultType="java.util.Map">
+        SELECT product_id, COUNT(*) as score,
+               SUM(
+                   (CASE WHEN behavior_type='purchase' THEN 8.0
+                         WHEN behavior_type='favorite' THEN 3.0
+                         WHEN behavior_type='cart' THEN 2.0
+                         WHEN behavior_type='search' THEN 2.0
+                         WHEN behavior_type='view' THEN 1.0
+                         ELSE 0 END)
+                   * EXP(-0.01 * DATEDIFF(NOW(), create_time))
+                   * (CASE WHEN DATEDIFF(NOW(), create_time) &lt;= 7 THEN 1.5 ELSE 1.0 END)
+               ) as weighted_score
+        FROM user_behavior
+        WHERE user_id = #{userId} AND product_id IS NOT NULL
+        GROUP BY product_id
+        ORDER BY weighted_score DESC
+    </select>
+
+    <select id="selectUserPreferences" resultType="java.util.Map">
+        SELECT ub.product_id, p.category_id, p.tags,
+               COUNT(*) as cnt,
+               SUM(CASE WHEN ub.behavior_type='purchase' THEN 1 ELSE 0 END) as purchase_count,
+               SUM(CASE WHEN ub.behavior_type='favorite' THEN 1 ELSE 0 END) as favorite_count,
+               SUM(CASE WHEN ub.behavior_type='cart' THEN 1 ELSE 0 END) as cart_count,
+               SUM(CASE WHEN ub.behavior_type='view' THEN 1 ELSE 0 END) as view_count,
+               SUM(CASE WHEN ub.behavior_type='purchase' THEN 8.0
+                        WHEN ub.behavior_type='favorite' THEN 3.0
+                        WHEN ub.behavior_type='cart' THEN 2.0
+                        WHEN ub.behavior_type='search' THEN 2.0
+                        WHEN ub.behavior_type IN ('remove_cart', 'delete_cart', 'cart_remove', 'dislike') THEN -5.0
+                        WHEN ub.behavior_type='view' THEN 1.0
+                        ELSE 0 END) as weight
+        FROM user_behavior ub
+        JOIN product p ON ub.product_id = p.id
+        WHERE ub.user_id = #{userId} AND ub.product_id IS NOT NULL
+        GROUP BY ub.product_id, p.category_id, p.tags
+        ORDER BY weight DESC
+    </select>
+
+    <select id="selectUserSearchCategoryPreferences" resultType="java.util.Map">
+        SELECT
+            matched.category_id,
+            matched.category_name,
+            SUM(matched.weight) AS weight,
+            SUM(matched.search_count) AS search_count
+        FROM (
+            SELECT
+                keyword_match.category_id,
+                keyword_match.category_name,
+                SUM(keyword_match.search_count * keyword_match.freshness_weight) * 2.0 AS weight,
+                SUM(keyword_match.search_count) AS search_count
+            FROM (
+                SELECT DISTINCT
+                    sh.id AS source_id,
+                    p.category_id,
+                    COALESCE(c.name, '未分类') AS category_name,
+                    sh.search_count,
+                    CASE
+                        WHEN sh.create_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1.8
+                        WHEN sh.create_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1.0
+                        ELSE 0.45
+                    END AS freshness_weight
+                FROM search_history sh
+                JOIN product p
+                  ON p.deleted = 0
+                 AND p.status = 1
+                LEFT JOIN category c ON c.id = p.category_id
+                WHERE sh.user_id = #{userId}
+                  AND sh.keyword IS NOT NULL
+                  AND sh.keyword != ''
+                  AND p.category_id IS NOT NULL
+                 AND (
+                     COALESCE(c.name, '') LIKE CONCAT('%', sh.keyword, '%')
+                     OR p.name LIKE CONCAT('%', sh.keyword, '%')
+                     OR COALESCE(p.description, '') LIKE CONCAT('%', sh.keyword, '%')
+                     OR COALESCE(CAST(p.tags AS CHAR), '') LIKE CONCAT('%', sh.keyword, '%')
+                 )
+            ) keyword_match
+            GROUP BY keyword_match.category_id, keyword_match.category_name
+
+            UNION ALL
+
+            SELECT
+                behavior_match.category_id,
+                behavior_match.category_name,
+                SUM(behavior_match.freshness_weight) * 2.0 AS weight,
+                COUNT(*) AS search_count
+            FROM (
+                SELECT DISTINCT
+                    ub.id AS source_id,
+                    p.category_id,
+                    COALESCE(c.name, '未分类') AS category_name,
+                    CASE
+                        WHEN ub.create_time >= DATE_SUB(NOW(), INTERVAL 7 DAY) THEN 1.8
+                        WHEN ub.create_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) THEN 1.0
+                        ELSE 0.45
+                    END AS freshness_weight
+                FROM user_behavior ub
+                JOIN product p
+                  ON p.deleted = 0
+                 AND p.status = 1
+                LEFT JOIN category c ON c.id = p.category_id
+                WHERE ub.user_id = #{userId}
+                  AND ub.behavior_type = 'search'
+                  AND ub.search_keyword IS NOT NULL
+                  AND ub.search_keyword != ''
+                  AND p.category_id IS NOT NULL
+                 AND (
+                     COALESCE(c.name, '') LIKE CONCAT('%', ub.search_keyword, '%')
+                     OR p.name LIKE CONCAT('%', ub.search_keyword, '%')
+                     OR COALESCE(p.description, '') LIKE CONCAT('%', ub.search_keyword, '%')
+                     OR COALESCE(CAST(p.tags AS CHAR), '') LIKE CONCAT('%', ub.search_keyword, '%')
+                 )
+            ) behavior_match
+            GROUP BY behavior_match.category_id, behavior_match.category_name
+        ) matched
+        GROUP BY matched.category_id, matched.category_name
+        ORDER BY weight DESC, search_count DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectSimilarProductIds" resultType="java.lang.Long">
+        SELECT ub2.product_id
+        FROM user_behavior ub1
+        JOIN user_behavior ub2 ON ub1.user_id = ub2.user_id AND ub2.product_id != #{productId}
+        WHERE ub1.product_id = #{productId}
+          AND ub2.product_id IS NOT NULL
+        GROUP BY ub2.product_id
+        ORDER BY COUNT(DISTINCT ub2.user_id) DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectBehaviorStats" resultType="java.util.Map">
+        SELECT behavior_type, COUNT(*) as count,
+               COUNT(DISTINCT user_id) as user_count
+        FROM user_behavior
+        GROUP BY behavior_type
+    </select>
+
+    <select id="selectActiveUserIds" resultType="java.lang.Long">
+        SELECT user_id
+        FROM user_behavior
+        WHERE user_id IS NOT NULL
+        GROUP BY user_id
+        ORDER BY MAX(create_time) DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectActiveUserIdsSince" resultType="java.lang.Long">
+        SELECT user_id
+        FROM user_behavior
+        WHERE user_id IS NOT NULL
+          AND create_time >= #{startTime}
+        GROUP BY user_id
+        ORDER BY MAX(create_time) DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectUserBehaviorStats" resultType="java.util.Map">
+        SELECT behavior_type as behaviorType, COUNT(*) as count,
+               COUNT(DISTINCT product_id) as productCount
+        FROM user_behavior
+        WHERE user_id = #{userId}
+        GROUP BY behavior_type
+    </select>
+
+</mapper>

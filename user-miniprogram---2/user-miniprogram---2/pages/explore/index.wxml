@@ -1,0 +1,118 @@
+<scroll-view class="explore-page" scroll-y bindscroll="onScroll" bindscrolltolower="onReachBottom" lower-threshold="200" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+  <view class="explore-atmosphere explore-atmosphere-a"></view>
+  <view class="explore-atmosphere explore-atmosphere-b"></view>
+  <view class="explore-grid-mask"></view>
+
+  <custom-nav-bar title="发现好物" showBack="{{false}}" isScrolled="{{isScrolled}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <view class="search-shell {{isScrolled ? 'search-shell-scrolled' : ''}}">
+    <view class="search-bar">
+      <view class="search-icon"></view>
+      <input
+        class="search-input"
+        placeholder="搜索商品、品牌、同款"
+        placeholder-class="search-placeholder"
+        bindinput="onSearchInput"
+        confirm-type="search"
+        bindconfirm="onSearchConfirm"
+      />
+      <view class="search-trigger active-opacity" bindtap="onSearchConfirm">搜索</view>
+    </view>
+  </view>
+
+  <view class="hot-shell" wx:if="{{hotTags.length > 0}}">
+    <view class="shell-head">
+      <view class="shell-head-main">
+        <text class="shell-kicker">热搜词</text>
+        <text class="shell-title">热门搜索</text>
+      </view>
+      <view class="shell-sub">上升中</view>
+    </view>
+    <scroll-view scroll-x enable-flex class="hot-scroll" show-scrollbar="{{false}}">
+      <view class="hot-wrap">
+        <view class="hot-chip active-opacity" wx:for="{{hotTags}}" wx:key="*this" bindtap="onTagClick" data-tag="{{item}}">
+          <text class="hot-chip-mark">#</text>
+          <text class="hot-chip-text">{{item}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="category-shell" wx:if="{{categories.length > 0}}">
+    <view class="shell-head">
+      <view class="shell-head-main">
+        <text class="shell-kicker">分类入口</text>
+        <text class="shell-title">品类逛逛</text>
+      </view>
+      <view class="shell-sub">按类找货</view>
+    </view>
+    <scroll-view scroll-x enable-flex class="category-scroll" show-scrollbar="{{false}}">
+      <view class="category-list">
+        <view class="category-item {{activeCategory === '' ? 'active' : ''}}" bindtap="switchCategory" data-id="" data-name="">
+          <view class="category-icon-wrap all-icon">
+            <view class="all-icon-grid">
+              <view class="dot"></view><view class="dot"></view>
+              <view class="dot"></view><view class="dot"></view>
+            </view>
+          </view>
+          <text class="category-name">全部</text>
+        </view>
+        <view
+          class="category-item {{activeCategory == item.id ? 'active' : ''}}"
+          wx:for="{{categories}}"
+          wx:key="id"
+          bindtap="switchCategory"
+          data-id="{{item.id}}"
+          data-name="{{item.name}}"
+        >
+          <view class="category-icon-wrap">
+            <view class="category-glyph {{item.iconClass || 'icon-default'}}"></view>
+          </view>
+          <text class="category-name">{{item.name}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+
+  <view class="products-shell">
+    <view class="feed-skeleton" wx:if="{{loadingProducts && products.length === 0}}">
+      <view class="skeleton-feature"></view>
+      <view class="skeleton-row" wx:for="{{skeletonRows}}" wx:key="*this"></view>
+    </view>
+
+    <block wx:else>
+      <view class="product-grid" wx:if="{{products.length > 0}}">
+        <view
+          class="product-grid-item"
+          wx:for="{{products}}"
+          wx:key="id"
+        >
+          <product-card
+            product="{{item}}"
+            showSales="{{true}}"
+            showReason="{{true}}"
+            showAddCart="{{false}}"
+            showDislike="{{false}}"
+            bind:click="goToDetail"
+          ></product-card>
+        </view>
+      </view>
+    </block>
+
+    <view class="loading-more" wx:if="{{loadingProducts}}">
+      <view class="loading-dot"></view>
+      <text>加载中...</text>
+    </view>
+    <view class="no-more" wx:elif="{{!hasMoreProducts && products.length}}">
+      <text>已经到底了</text>
+    </view>
+
+    <view class="empty-state" wx:if="{{!loadingProducts && !products.length}}">
+      <view class="empty-icon"></view>
+      <view class="empty-title">暂无结果</view>
+      <view class="empty-desc">换个关键词或分类继续看看</view>
+    </view>
+  </view>
+
+  <view style="height: 188rpx;"></view>
+</scroll-view>

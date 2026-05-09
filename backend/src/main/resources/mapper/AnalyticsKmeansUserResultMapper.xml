@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.AnalyticsKmeansUserResultMapper">
+
+    <select id="selectSegmentUserPage" resultType="java.util.Map">
+        SELECT
+            r.user_id AS userId,
+            r.segment_code AS segmentCode,
+            r.segment_name AS segmentName,
+            r.cluster_index AS clusterIndex,
+            r.distance_to_center AS distanceToCenter,
+            r.confidence_score AS confidenceScore,
+            r.is_cold_start AS isColdStart,
+            r.persona_summary AS personaSummary,
+            r.sort_order AS sortOrder,
+            u.username AS username,
+            u.nickname AS nickname,
+            u.avatar AS avatar,
+            u.phone AS phone,
+            u.status AS userStatus,
+            f.order_count_90d AS orderCount90d,
+            f.order_amount_90d AS orderAmount90d,
+            f.avg_order_amount_90d AS avgOrderAmount90d,
+            f.behavior_count_30d AS behaviorCount30d,
+            f.active_days_30d AS activeDays30d,
+            f.recency_order_days AS recencyOrderDays,
+            f.recency_behavior_days AS recencyBehaviorDays
+        FROM analytics_kmeans_user_result r
+        LEFT JOIN `user` u ON u.id = r.user_id
+        LEFT JOIN analytics_kmeans_feature_snapshot f
+            ON f.task_id = r.task_id AND f.user_id = r.user_id
+        WHERE r.task_id = #{taskId}
+        <if test="segmentCode != null and segmentCode != ''">
+            AND r.segment_code = #{segmentCode}
+        </if>
+        ORDER BY r.sort_order ASC, r.confidence_score DESC, r.user_id DESC
+    </select>
+
+    <select id="selectUserClusterDetail" resultType="java.util.Map">
+        SELECT
+            r.user_id AS userId,
+            r.segment_code AS segmentCode,
+            r.segment_name AS segmentName,
+            r.cluster_index AS clusterIndex,
+            r.distance_to_center AS distanceToCenter,
+            r.confidence_score AS confidenceScore,
+            r.is_cold_start AS isColdStart,
+            r.persona_summary AS personaSummary,
+            u.username AS username,
+            u.nickname AS nickname,
+            u.avatar AS avatar,
+            u.phone AS phone,
+            u.email AS email,
+            u.status AS userStatus,
+            u.create_time AS userCreateTime,
+            f.order_count_90d AS orderCount90d,
+            f.order_amount_90d AS orderAmount90d,
+            f.avg_order_amount_90d AS avgOrderAmount90d,
+            f.distinct_category_count_90d AS distinctCategoryCount90d,
+            f.behavior_count_30d AS behaviorCount30d,
+            f.view_count_30d AS viewCount30d,
+            f.cart_count_30d AS cartCount30d,
+            f.favorite_count_30d AS favoriteCount30d,
+            f.purchase_behavior_count_30d AS purchaseBehaviorCount30d,
+            f.active_days_30d AS activeDays30d,
+            f.avg_duration_30d AS avgDuration30d,
+            f.recency_order_days AS recencyOrderDays,
+            f.recency_behavior_days AS recencyBehaviorDays,
+            f.tenure_days AS tenureDays,
+            f.raw_features AS rawFeatures,
+            f.normalized_features AS normalizedFeatures
+        FROM analytics_kmeans_user_result r
+        LEFT JOIN `user` u ON u.id = r.user_id
+        LEFT JOIN analytics_kmeans_feature_snapshot f
+            ON f.task_id = r.task_id AND f.user_id = r.user_id
+        WHERE r.task_id = #{taskId}
+          AND r.user_id = #{userId}
+        LIMIT 1
+    </select>
+
+    <select id="selectUserIdsByTaskAndSegmentCodes" resultType="java.lang.Long">
+        SELECT r.user_id
+        FROM analytics_kmeans_user_result r
+        INNER JOIN `user` u ON u.id = r.user_id AND u.status = 1 AND (u.deleted = 0 OR u.deleted IS NULL)
+        WHERE r.task_id = #{taskId}
+          AND r.segment_code IN
+          <foreach collection="segmentCodes" item="segmentCode" open="(" separator="," close=")">
+              #{segmentCode}
+          </foreach>
+        ORDER BY r.sort_order ASC, r.confidence_score DESC, r.user_id DESC
+    </select>
+
+</mapper>

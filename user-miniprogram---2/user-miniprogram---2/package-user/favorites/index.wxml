@@ -1,0 +1,47 @@
+<view class="container">
+<custom-nav-bar title="我的收藏" color="#111111" showBack="{{true}}" backgroundColor="#ffffff"></custom-nav-bar>
+
+  <scroll-view class="fav-scroll" scroll-y bindscrolltolower="loadMore" refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+    <view class="hero">
+      <view class="hero-kicker">收藏夹</view>
+      <view class="hero-title">已收藏商品</view>
+      <view class="hero-pills">
+        <text class="hero-pill">当前 {{list.length}} 件</text>
+        <text class="hero-pill">按收藏时间排序</text>
+      </view>
+    </view>
+
+    <view class="fav-grid" wx:if="{{list.length > 0}}">
+      <view class="fav-item" wx:for="{{list}}" wx:key="id">
+        <product-card
+          product="{{item.cardProduct}}"
+          showReason="{{true}}"
+          showSales="{{true}}"
+          showAddCart="{{false}}"
+          showDislike="{{false}}"
+          bind:click="goDetail"
+        ></product-card>
+        <view class="fav-item-foot">
+          <text class="fav-time">{{item.createTime}}</text>
+          <view class="fav-del active-opacity" catchtap="removeFav" data-product-id="{{item.productId}}" data-index="{{index}}">
+            取消收藏
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="empty-state" wx:if="{{!loading && list.length === 0}}">
+      <view class="empty-icon"></view>
+      <view class="empty-text">暂无收藏</view>
+      <view class="empty-btn active-opacity" bindtap="goHome">去逛逛</view>
+    </view>
+
+    <view class="load-more" wx:if="{{list.length > 0}}">
+      <text wx:if="{{loadingMore}}">加载中</text>
+      <text wx:elif="{{noMore}}">已全部展示</text>
+    </view>
+
+    <view style="height: 120rpx;"></view>
+  </scroll-view>
+</view>
+

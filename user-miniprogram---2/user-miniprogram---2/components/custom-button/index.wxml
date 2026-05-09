@@ -1,0 +1,11 @@
+<button 
+  class="custom-btn custom-btn-{{type}} custom-btn-{{size}} {{round ? 'custom-btn-round' : ''}} {{block ? 'custom-btn-block' : ''}} {{disabled ? 'custom-btn-disabled' : ''}}"
+  hover-class="custom-btn-hover"
+  style="{{customStyle}}"
+  disabled="{{disabled}}"
+  bindtap="onClick"
+>
+  <view class="custom-btn-content">
+    <slot></slot>
+  </view>
+</button>

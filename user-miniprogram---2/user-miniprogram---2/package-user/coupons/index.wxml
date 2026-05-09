@@ -1,0 +1,141 @@
+<view class="page">
+<custom-nav-bar title="优惠券中心" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <scroll-view
+    class="scroll"
+    scroll-y
+    refresher-enabled
+    refresher-triggered="{{refreshing}}"
+    bindrefresherrefresh="onRefresh"
+  >
+    <view class="hero {{activeTab === 'my' ? 'warning' : ''}}">
+      <text class="hero-kicker">优惠券</text>
+      <text class="hero-title">{{activeTab === 'available' ? '领券' : '我的券'}}</text>
+      <text class="hero-desc" wx:if="{{activeTab === 'available' && summary.unclaimedCount > 0}}">
+        {{summary.unclaimedCount}} 张可领
+      </text>
+      <text class="hero-desc" wx:elif="{{activeTab === 'available'}}">已看完</text>
+      <text class="hero-desc" wx:if="{{activeTab === 'my' && summary.soonExpiringCount > 0}}">
+        {{summary.soonExpiringNames.length ? ('即将过期：' + summary.soonExpiringNames.join('、')) : '有优惠券将在 3 天内到期'}}
+      </text>
+      <text class="hero-desc" wx:elif="{{activeTab === 'my'}}">暂无临期券</text>
+      <view class="hero-pills">
+        <text class="hero-pill">可领取 {{summary.unclaimedCount}}</text>
+        <text class="hero-pill">快过期 {{summary.soonExpiringCount}}</text>
+        <text class="hero-pill">{{usageGuide.actionText}}</text>
+      </view>
+      <view class="hero-foot">
+        <view class="hero-guide-copy">
+          <text class="hero-guide-label">建议</text>
+          <text class="hero-extra">{{usageGuide.description}}</text>
+        </view>
+        <view class="hero-action" bindtap="handleUseCoupon">{{usageGuide.actionText}}</view>
+      </view>
+    </view>
+
+    <view class="tab-row">
+      <view class="tab-item {{activeTab === 'available' ? 'active' : ''}}" bindtap="switchTab" data-tab="available">可领优惠券</view>
+      <view class="tab-item {{activeTab === 'my' ? 'active' : ''}}" bindtap="switchTab" data-tab="my">我的优惠券</view>
+    </view>
+
+    <view class="panel" wx:if="{{activeTab === 'available'}}">
+      <view class="section-brief" wx:if="{{availableCoupons.length > 0}}">
+        <text class="section-title">当前可领</text>
+        <text class="section-meta">共 {{availableCoupons.length}} 张</text>
+      </view>
+      <view class="empty" wx:if="{{!availableLoading && availableCoupons.length === 0}}">
+        <view class="empty-icon"></view>
+        <view class="empty-title">暂无可领</view>
+      </view>
+
+      <view class="coupon-card {{item.userCouponStatus === 1 ? 'claimed-card' : ''}}" wx:for="{{availableCoupons}}" wx:key="id">
+        <view class="left-band">
+          <view class="coupon-value" wx:if="{{item.type === 1 || item.type === 3}}">
+            <text class="value-symbol">￥</text>{{item.value}}
+          </view>
+          <view class="coupon-value" wx:if="{{item.type === 2}}">
+            {{item.value}}<text class="value-unit">折</text>
+          </view>
+          <view class="coupon-condition" wx:if="{{item.type === 3}}">无门槛</view>
+          <view class="coupon-condition" wx:elif="{{item.minAmount > 0}}">满 {{item.minAmount}} 可用</view>
+        </view>
+        <view class="cut-line">
+          <view class="cut-hole cut-hole-top"></view>
+          <view class="cut-hole cut-hole-bottom"></view>
+        </view>
+        <view class="right-body">
+          <view class="coupon-head">
+            <view class="coupon-name text-ellipsis">{{item.name}}</view>
+            <view class="coupon-badge {{item.userCouponStatus === 1 ? 'claimed' : 'pending'}}">{{item.badgeText}}</view>
+          </view>
+          <view class="coupon-meta-row">
+            <view class="coupon-source {{item.sourceClass}}">{{item.sourceLabel}}</view>
+            <view class="coupon-time">{{item.startTimeStr}} - {{item.endTimeStr}}</view>
+          </view>
+          <view class="coupon-tip" wx:if="{{item.userCouponStatus === 0}}">下单抵扣</view>
+          <view class="coupon-tip" wx:else>结算可用</view>
+          <view class="coupon-actions">
+            <view class="btn-dark" wx:if="{{item.userCouponStatus === 0}}" bindtap="claimCoupon" data-id="{{item.id}}">立即领取</view>
+            <view class="btn-light" wx:else bindtap="handleUseCoupon">{{usageGuide.actionText}}</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="panel" wx:if="{{activeTab === 'my'}}">
+      <view class="sub-tabs">
+        <view class="sub-tab {{myStatus === 0 ? 'active' : ''}}" bindtap="switchMyStatus" data-status="0">未使用</view>
+        <view class="sub-tab {{myStatus === 1 ? 'active' : ''}}" bindtap="switchMyStatus" data-status="1">已使用</view>
+        <view class="sub-tab {{myStatus === 2 ? 'active' : ''}}" bindtap="switchMyStatus" data-status="2">已过期</view>
+      </view>
+      <view class="section-brief" wx:if="{{myCoupons.length > 0}}">
+        <text class="section-title">{{myStatus === 0 ? '当前可用' : (myStatus === 1 ? '已使用记录' : '已过期记录')}}</text>
+        <text class="section-meta">共 {{myCoupons.length}} 张</text>
+      </view>
+
+      <view class="empty" wx:if="{{!myLoading && myCoupons.length === 0}}">
+        <view class="empty-icon"></view>
+        <view class="empty-title">{{myStatus === 0 ? '暂无可用' : myStatus === 1 ? '暂无已用' : '暂无过期'}}</view>
+        <view class="empty-link" wx:if="{{myStatus === 0}}" bindtap="switchTab" data-tab="available">去领券</view>
+      </view>
+
+      <view class="coupon-card {{myStatus !== 0 ? 'disabled-card' : ''}}" wx:for="{{myCoupons}}" wx:key="id">
+        <view class="left-band">
+          <view class="coupon-value" wx:if="{{item.coupon.type === 1 || item.coupon.type === 3}}">
+            <text class="value-symbol">￥</text>{{item.coupon.value}}
+          </view>
+          <view class="coupon-value" wx:if="{{item.coupon.type === 2}}">
+            {{item.coupon.value}}<text class="value-unit">折</text>
+          </view>
+          <view class="coupon-condition" wx:if="{{item.coupon.type === 3}}">无门槛</view>
+          <view class="coupon-condition" wx:elif="{{item.coupon.minAmount > 0}}">满 {{item.coupon.minAmount}} 可用</view>
+        </view>
+        <view class="cut-line">
+          <view class="cut-hole cut-hole-top"></view>
+          <view class="cut-hole cut-hole-bottom"></view>
+        </view>
+        <view class="right-body">
+          <view class="coupon-head">
+            <view class="coupon-name text-ellipsis">{{item.coupon.name}}</view>
+            <view class="coupon-badge warning" wx:if="{{myStatus === 0 && item.expiringSoon}}">快过期</view>
+            <view class="coupon-badge claimed" wx:if="{{myStatus === 1}}">已使用</view>
+            <view class="coupon-badge claimed" wx:if="{{myStatus === 2}}">已过期</view>
+          </view>
+          <view class="coupon-meta-row">
+            <view class="coupon-source {{item.coupon.sourceClass}}">{{item.coupon.sourceLabel}}</view>
+            <view class="coupon-time">{{item.coupon.startTimeStr}} - {{item.coupon.endTimeStr}}</view>
+          </view>
+          <view class="coupon-tip warning-text" wx:if="{{myStatus === 0 && item.expiringSoon}}">{{item.expiryText}}</view>
+          <view class="coupon-tip" wx:elif="{{myStatus === 0}}">结算自动匹配</view>
+          <view class="coupon-actions" wx:if="{{myStatus === 0}}">
+            <view class="btn-light" bindtap="handleUseCoupon">{{usageGuide.actionText}}</view>
+          </view>
+          <view class="coupon-status" wx:if="{{myStatus !== 0}}">{{myStatus === 1 ? '已使用' : '已过期'}}</view>
+        </view>
+      </view>
+    </view>
+
+    <view style="height: 40rpx;"></view>
+  </scroll-view>
+</view>
+

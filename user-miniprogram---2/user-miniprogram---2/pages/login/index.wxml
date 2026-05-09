@@ -1,0 +1,166 @@
+<view class="auth-page">
+  <custom-nav-bar title="{{isLogin ? '账户登录' : '注册账户'}}" showBack="{{true}}" backgroundColor="#ffffff" color="#181818"></custom-nav-bar>
+
+  <view class="auth-content">
+    <view class="hero-panel">
+      <text class="hero-kicker">账户服务</text>
+      <view class="hero-title-row">
+        <text class="hero-title">{{isLogin ? '登录你的账户' : '注册新账户'}}</text>
+        <text class="hero-badge">{{isLogin ? '账户' : '新用户'}}</text>
+      </view>
+      <text class="hero-desc">{{isLogin ? '登录后可查看订单、地址、优惠券与购物记录。' : '注册后可同步收货地址、优惠券与订单信息。'}}</text>
+    </view>
+
+    <view class="auth-shell">
+      <view class="mode-switch">
+        <view class="mode-item {{isLogin ? 'mode-item-active' : ''}}" bindtap="switchToLogin">登录</view>
+        <view class="mode-item {{!isLogin ? 'mode-item-active' : ''}}" bindtap="switchToRegister">注册</view>
+      </view>
+
+      <view class="form-head">
+        <text class="form-title">{{isLogin ? '输入账号信息' : '用手机号完成注册'}}</text>
+        <text class="form-desc">{{isLogin ? '验证后继续' : '填写后使用'}}</text>
+      </view>
+
+      <view class="form-surface" wx:if="{{isLogin}}">
+        <view class="field-block">
+          <text class="field-label">账号</text>
+          <input
+            class="field-input"
+            placeholder="请输入账号或手机号"
+            placeholder-class="field-placeholder"
+            value="{{username}}"
+            bindinput="onUsernameInput"
+          />
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">密码</text>
+          <view class="field-password">
+            <input
+              class="field-input password-input"
+              password="{{!showLoginPassword}}"
+              placeholder="请输入密码"
+              placeholder-class="field-placeholder"
+              value="{{password}}"
+              bindinput="onPasswordInput"
+            />
+            <view class="password-toggle" bindtap="togglePasswordVisibility" data-key="showLoginPassword">
+              <view class="eye-shape">
+                <view class="eye-core"></view>
+                <view class="eye-line" wx:if="{{!showLoginPassword}}"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">图形验证码</text>
+          <view class="field-captcha-row">
+            <input
+              class="field-input code-input"
+              placeholder="请输入图形验证码"
+              placeholder-class="field-placeholder"
+              value="{{captchaCode}}"
+              bindinput="onCaptchaInput"
+            />
+            <image class="captcha-image" src="{{captchaImage}}" mode="aspectFit" bindtap="refreshCaptcha"></image>
+          </view>
+        </view>
+
+        <view class="submit-btn {{submitting ? 'submit-btn-disabled' : ''}}" bindtap="submitLogin">立即登录</view>
+        <view class="form-foot">还没有账号？<text class="foot-link" bindtap="switchToRegister">立即注册</text></view>
+      </view>
+
+      <view class="form-surface" wx:else>
+        <view class="field-block">
+          <text class="field-label">手机号</text>
+          <input
+            class="field-input"
+            placeholder="请输入手机号"
+            placeholder-class="field-placeholder"
+            type="number"
+            maxlength="11"
+            value="{{regPhone}}"
+            bindinput="onRegPhoneInput"
+          />
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">密码</text>
+          <view class="field-password">
+            <input
+              class="field-input password-input"
+              password="{{!showRegPassword}}"
+              placeholder="请输入密码（至少6位）"
+              placeholder-class="field-placeholder"
+              value="{{regPassword}}"
+              bindinput="onRegPasswordInput"
+            />
+            <view class="password-toggle" bindtap="togglePasswordVisibility" data-key="showRegPassword">
+              <view class="eye-shape">
+                <view class="eye-core"></view>
+                <view class="eye-line" wx:if="{{!showRegPassword}}"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">确认密码</text>
+          <view class="field-password">
+            <input
+              class="field-input password-input"
+              password="{{!showRegPasswordConfirm}}"
+              placeholder="请再次输入密码"
+              placeholder-class="field-placeholder"
+              value="{{regPasswordConfirm}}"
+              bindinput="onRegPasswordConfirmInput"
+            />
+            <view class="password-toggle" bindtap="togglePasswordVisibility" data-key="showRegPasswordConfirm">
+              <view class="eye-shape">
+                <view class="eye-core"></view>
+                <view class="eye-line" wx:if="{{!showRegPasswordConfirm}}"></view>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">图形验证码</text>
+          <view class="field-captcha-row">
+            <input
+              class="field-input code-input"
+              placeholder="请输入图形验证码"
+              placeholder-class="field-placeholder"
+              value="{{captchaCode}}"
+              bindinput="onCaptchaInput"
+            />
+            <image class="captcha-image" src="{{captchaImage}}" mode="aspectFit" bindtap="refreshCaptcha"></image>
+          </view>
+        </view>
+
+        <view class="field-block">
+          <text class="field-label">短信验证码</text>
+          <view class="field-sms-row">
+            <input
+              class="field-input sms-input"
+              placeholder="请输入短信验证码"
+              placeholder-class="field-placeholder"
+              type="number"
+              maxlength="6"
+              value="{{regSmsCode}}"
+              bindinput="onRegSmsCodeInput"
+            />
+            <view class="sms-btn {{smsCountdown > 0 ? 'sms-btn-disabled' : ''}}" bindtap="sendSmsCode">
+              {{smsCountdown > 0 ? smsCountdown + 's' : '获取验证码'}}
+            </view>
+          </view>
+        </view>
+
+        <view class="submit-btn {{submitting ? 'submit-btn-disabled' : ''}}" bindtap="submitRegister">立即注册</view>
+        <view class="form-foot">已有账号？<text class="foot-link" bindtap="switchToLogin">去登录</text></view>
+      </view>
+    </view>
+  </view>
+</view>

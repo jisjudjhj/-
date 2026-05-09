@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ecommerce.mapper.UserCouponMapper">
+
+    <select id="selectOwnedUserIds" resultType="java.lang.Long">
+        SELECT user_id
+        FROM user_coupon
+        WHERE coupon_id = #{couponId}
+        <if test="userIds != null and userIds.size() > 0">
+            AND user_id IN
+            <foreach collection="userIds" item="userId" open="(" separator="," close=")">
+                #{userId}
+            </foreach>
+        </if>
+    </select>
+
+    <insert id="batchInsertIgnore">
+        INSERT IGNORE INTO user_coupon (user_id, coupon_id, status)
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (#{item.userId}, #{item.couponId}, #{item.status})
+        </foreach>
+    </insert>
+
+</mapper>

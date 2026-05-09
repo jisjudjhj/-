@@ -1,0 +1,196 @@
+<view class="container">
+<custom-nav-bar title="订单详情" showBack="{{true}}" backgroundColor="#ffffff" color="#111111"></custom-nav-bar>
+
+  <scroll-view class="detail-scroll" scroll-y refresher-enabled refresher-triggered="{{refreshing}}" bindrefresherrefresh="onRefresh">
+    <view wx:if="{{loading}}" class="loading-wrap">
+      <text class="state-text">加载中...</text>
+    </view>
+    <view wx:elif="{{!order}}" class="empty-wrap">
+      <text class="state-text">订单不存在或加载失败</text>
+    </view>
+    <block wx:else>
+    <view class="status-section">
+      <view class="status-title-row">
+        <view class="status-title text-h2">{{order.statusText}}</view>
+        <text class="seckill-badge" wx:if="{{order.isSeckill}}">秒杀订单</text>
+      </view>
+      <view class="status-desc" wx:if="{{order.status === 'unpaid'}}">待支付</view>
+      <view class="status-desc" wx:if="{{order.status === 'unshipped'}}">备货中</view>
+      <view class="status-desc" wx:if="{{order.status === 'unreceived'}}">待收货</view>
+      <view class="status-metrics">
+        <view class="status-metric">
+          <text class="status-metric-label">订单编号</text>
+          <text class="status-metric-value text-ellipsis">{{order.orderNo}}</text>
+        </view>
+        <view class="status-metric">
+          <text class="status-metric-label">下单时间</text>
+          <text class="status-metric-value">{{order.createTime}}</text>
+        </view>
+        <view class="status-metric">
+          <text class="status-metric-label">实付款</text>
+          <text class="status-metric-value">¥{{order.totalPrice}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section logistics-section hover-scale" wx:if="{{logistics}}">
+      <view class="logistics-header">
+        <view class="logistics-icon-wrap">
+          <view class="logistics-icon"></view>
+        </view>
+        <view class="logistics-info">
+          <view class="logistics-status text-ellipsis-2">{{logistics.latest}}</view>
+          <view class="logistics-time">{{logistics.time}}</view>
+        </view>
+        <view class="arrow-right"></view>
+      </view>
+    </view>
+
+    <view class="section address-section">
+      <view class="section-caption">收货信息</view>
+      <view class="address-icon-wrap">
+        <view class="location-icon"></view>
+      </view>
+      <view class="address-info">
+        <view class="address-user">
+          <text class="user-name">{{order.address.name}}</text>
+          <text class="user-phone">{{order.address.phone}}</text>
+        </view>
+        <view class="address-detail">{{order.address.fullAddress}}</view>
+      </view>
+    </view>
+
+    <view class="section goods-section">
+      <view class="section-caption">商品清单</view>
+      <view class="goods-item active-opacity" wx:for="{{order.goods}}" wx:key="id" bindtap="goToProductDetail" data-product-id="{{item.productId}}">
+        <image wx:if="{{item.image}}" class="goods-img" src="{{item.image}}" mode="aspectFill" binderror="handleDetailGoodsImageError" data-index="{{index}}"></image>
+        <view wx:else class="goods-img image-placeholder">
+          <text class="image-placeholder-text">订单商品</text>
+        </view>
+        <view class="goods-info">
+          <view class="goods-title-row">
+            <view class="goods-title text-ellipsis">{{item.title}}</view>
+            <text class="goods-seckill-tag" wx:if="{{order.isSeckill}}">秒杀价</text>
+          </view>
+          <view class="goods-price-row">
+            <view class="goods-price"><text class="price-symbol">¥</text>{{item.price}}</view>
+            <text class="goods-qty">x{{item.quantity}}</text>
+          </view>
+          <view class="goods-review-row" wx:if="{{order.status === 'completed'}}">
+            <text class="goods-review-hint">{{item.reviewed ? '已评价' : (item.canReview ? '可评价' : '暂不可评')}}</text>
+            <view class="goods-review-btn is-loading" wx:if="{{item.reviewChecking}}">检查中</view>
+            <view class="goods-review-btn is-muted" wx:elif="{{item.reviewed}}">已评价</view>
+            <view class="goods-review-btn is-muted" wx:elif="{{!item.canReview}}">暂不可评</view>
+            <view class="goods-review-btn active-opacity" wx:else catchtap="goToReviewEditor" data-index="{{index}}">去评价</view>
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="section completion-section" wx:if="{{completionInsight}}">
+      <view class="completion-topline">
+        <view>
+          <text class="completion-kicker">{{completionInsight.sourceLabel}}</text>
+          <view class="completion-title">{{completionInsight.headline}}</view>
+        </view>
+        <view class="completion-token">Token {{completionInsight.tokenText}}</view>
+      </view>
+      <view class="completion-copy">{{completionInsight.feedbackText}} · {{completionInsight.recommendationText}}</view>
+      <view class="completion-steps">
+        <view class="completion-step" wx:for="{{completionInsight.steps}}" wx:key="label">
+          <text class="completion-step-label">{{item.label}}</text>
+          <text class="completion-step-value">{{item.value}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section repurchase-section" wx:if="{{repurchaseProducts.length}}">
+      <view class="section-head-row">
+        <view>
+          <view class="section-caption">复购与搭配推荐</view>
+          <view class="repurchase-title">为你生成下一步推荐</view>
+        </view>
+        <view class="repurchase-badge">订单完成召回</view>
+      </view>
+      <view class="repurchase-grid">
+        <view class="repurchase-item" wx:for="{{repurchaseProducts}}" wx:key="id">
+          <product-card
+            product="{{item}}"
+            className="order-repurchase-card"
+            showReason="{{true}}"
+            showSales="{{true}}"
+            bind:click="goToRecommendProduct"
+            bind:explain="goToRecommendProduct"
+          ></product-card>
+        </view>
+      </view>
+    </view>
+
+    <view class="section order-info-section">
+      <view class="section-caption">订单信息</view>
+      <view class="info-row">
+        <text class="info-label">订单编号</text>
+        <view class="info-value">
+          <text>{{order.orderNo}}</text>
+          <view class="copy-btn active-opacity" bindtap="copyOrderNo">复制</view>
+        </view>
+      </view>
+      <view class="info-row">
+        <text class="info-label">下单时间</text>
+        <text class="info-value">{{order.createTime}}</text>
+      </view>
+      <view class="info-row" wx:if="{{order.payTime}}">
+        <text class="info-label">付款时间</text>
+        <text class="info-value">{{order.payTime}}</text>
+      </view>
+    </view>
+
+    <view class="section summary-section">
+      <view class="section-caption">费用明细</view>
+      <view class="summary-row">
+        <text class="summary-label">商品总额</text>
+        <text class="summary-value">¥{{order.totalGoodsPrice}}</text>
+      </view>
+      <view class="summary-row">
+        <text class="summary-label">运费</text>
+        <text class="summary-value">+ ¥{{order.shippingFee}}</text>
+      </view>
+      <view class="summary-row" wx:if="{{order.isSeckill && order.seckillDiscount > 0}}">
+        <text class="summary-label">秒杀优惠</text>
+        <text class="summary-value summary-discount">- ¥{{order.seckillDiscount}}</text>
+      </view>
+      <view class="summary-divider"></view>
+      <view class="summary-total">
+        <text class="total-label">实付款</text>
+        <view class="total-price-wrap">
+          <text class="price-symbol">¥</text>
+          <text class="total-price">{{order.totalPrice}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="section service-section">
+      <view class="section-caption">售后与客服</view>
+      <view class="service-row">
+        <view class="service-btn active-opacity" bindtap="openMerchantService">联系商家协商</view>
+        <view class="service-btn active-opacity dark" bindtap="openOfficialService">官方客服</view>
+      </view>
+    </view>
+
+    </block>
+  </scroll-view>
+
+  <view class="action-bar-wrap">
+    <view class="action-bar">
+      <block wx:if="{{order}}">
+        <custom-button wx:if="{{order.status === 'unpaid'}}" type="secondary" customStyle="margin-right: 16rpx; min-width: 176rpx;" bind:click="handleAction" data-action="cancel">取消订单</custom-button>
+        <custom-button wx:if="{{order.status === 'unpaid'}}" type="primary" customStyle="min-width: 176rpx;" bind:click="handleAction" data-action="pay">余额付款</custom-button>
+        <custom-button wx:if="{{order.canRefund}}" type="secondary" customStyle="{{order.status === 'unreceived' ? 'margin-right: 16rpx; min-width: 176rpx;' : 'min-width: 176rpx;'}}" bind:click="handleAction" data-action="refund">申请退款</custom-button>
+        <custom-button wx:if="{{order.status === 'unreceived'}}" type="primary" customStyle="min-width: 176rpx;" bind:click="handleAction" data-action="confirm">确认收货</custom-button>
+      </block>
+    </view>
+  </view>
+</view>
+
+
+
